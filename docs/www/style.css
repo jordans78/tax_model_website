@@ -1,0 +1,42 @@
+/* Main body */
+
+body {
+  font-family: "Arial", sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+/* Chapter titles */
+
+h1 {
+  color: #1f4e79;
+  border-bottom: 2px solid #1f4e79;
+  padding-bottom: 8px;
+}
+
+h2 {
+  color: #2f75b5;
+}
+
+/* Code blocks */
+
+pre {
+  background-color: #f7f7f7;
+  border-left: 4px solid #2f75b5;
+  padding: 10px;
+}
+
+/* Tables */
+
+table {
+  font-size: 14px;
+}
+
+/* Notes */
+
+.note {
+  background-color: #eef5fb;
+  border-left: 5px solid #2f75b5;
+  padding: 12px;
+  margin: 15px 0;
+}

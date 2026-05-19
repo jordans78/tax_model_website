@@ -1,0 +1,12 @@
+bookdown::gitbook:
+  css: www/style.css
+  config:
+    toc:
+      before: |
+        <li><a href="./">Tax Modeling Toolkit</a></li>
+      after: |
+        <li><a href="https://www.r-project.org/" target="blank">Created with R</a></li>
+    sharing:
+      github: no
+      facebook: no
+      twitter: no

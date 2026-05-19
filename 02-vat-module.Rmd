@@ -1,0 +1,39 @@
+# VAT Module
+
+The VAT module estimates potential VAT revenue under the current policy structure and under alternative reform scenarios.
+
+## Main data sources
+
+The VAT module may use:
+
+- Supply and Use Tables;
+- Input-Output Tables;
+- household final consumption;
+- government final consumption;
+- NPISH final consumption;
+- intermediate consumption;
+- gross fixed capital formation;
+- VAT revenue data;
+- VAT policy rates and exemptions.
+
+## Example VAT results
+
+```{r}
+vat_table
+```
+
+## VAT revenue chart
+
+```{r, fig.width=8, fig.height=5}
+vat_chart
+```
+
+## Methodological note
+
+The VAT revenue impact can be calculated as:
+
+```{r}
+vat_revenue_change <- sum(tax_results$revenue_simulation - tax_results$revenue_baseline)
+
+vat_revenue_change
+```

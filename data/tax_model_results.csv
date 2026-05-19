@@ -1,0 +1,7 @@
+tax_type,year,revenue_baseline,revenue_simulation
+VAT,2024,1000,1080
+VAT,2025,1100,1190
+PIT,2024,700,740
+PIT,2025,760,820
+CIT,2024,500,530
+CIT,2025,540,600

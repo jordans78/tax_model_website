@@ -1,0 +1,52 @@
+# User Guide
+
+This section explains how users can work with the model.
+
+## Step 1: Prepare input data
+
+All input data should be saved in the `data/` folder.
+
+Required variables in the example file are:
+
+- `tax_type`
+- `year`
+- `revenue_baseline`
+- `revenue_simulation`
+
+## Step 2: Run the scripts
+
+Run the following script:
+
+```r
+source("build_site.R")
+```
+
+## Step 3: Open the HTML website
+
+After rendering, open:
+
+```text
+_book/index.html
+```
+
+## Step 4: Update the results
+
+To update the website, replace the input file:
+
+```text
+data/tax_model_results.csv
+```
+
+Then run again:
+
+```r
+bookdown::render_book("index.Rmd")
+```
+
+## Optional: link to a Shiny app
+
+You can also include a link to an interactive Shiny app:
+
+```markdown
+[Open VAT Simulation App](https://your-account.shinyapps.io/vat_app/)
+```

@@ -1,0 +1,52 @@
+---
+title: "Tax Modeling Toolkit"
+author: "World Bank Tax Team"
+site: bookdown::bookdown_site
+documentclass: book
+output:
+  bookdown::gitbook:
+    css: www/style.css
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  warning = FALSE,
+  message = FALSE
+)
+
+source("R/01_load_packages.R")
+source("R/02_prepare_data.R")
+source("R/03_create_tables.R")
+source("R/04_create_charts.R")
+```
+
+# Introduction
+
+This website presents an example of an HTML documentation page created with R.
+
+The website can be used to document a tax modeling toolkit covering:
+
+- VAT
+- PIT
+- CIT
+- Customs duties
+- Excise duties
+
+The website is static HTML, but it can include R tables, R charts, formulas, and links to Shiny applications.
+
+## Main purpose
+
+The purpose of the toolkit is to provide a structured framework for:
+
+- preparing tax data;
+- defining baseline and reform scenarios;
+- estimating revenue impacts;
+- presenting simulation results;
+- documenting assumptions and methodology.
+
+## Example data
+
+```{r}
+head(tax_results)
+```

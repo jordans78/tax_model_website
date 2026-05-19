@@ -1,0 +1,37 @@
+# PIT Module
+
+The Personal Income Tax module estimates tax liability at taxpayer level or household level.
+
+## Main policy parameters
+
+The PIT module can include:
+
+- tax rates;
+- tax brackets;
+- personal allowances;
+- deductions;
+- exemptions;
+- special regimes;
+- withholding tax rates.
+
+## Example PIT results
+
+```{r}
+pit_table
+```
+
+## PIT revenue chart
+
+```{r, fig.width=8, fig.height=5}
+pit_chart
+```
+
+## Example interpretation
+
+The PIT simulation compares revenue under the baseline system and the reform scenario.
+
+```{r}
+pit_change <- pit_table$Revenue_Simulation - pit_table$Revenue_Baseline
+
+pit_change
+```

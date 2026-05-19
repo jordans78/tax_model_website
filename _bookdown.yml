@@ -1,0 +1,13 @@
+book_filename: "tax-model-website"
+delete_merged_file: true
+
+rmd_files:
+  - "index.Rmd"
+  - "01-overview.Rmd"
+  - "02-vat-module.Rmd"
+  - "03-pit-module.Rmd"
+  - "04-user-guide.Rmd"
+
+language:
+  ui:
+    chapter_name: "Section "
