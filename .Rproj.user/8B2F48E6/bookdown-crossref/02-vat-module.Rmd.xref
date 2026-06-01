@@ -1,6 +1,17 @@
-h1:vat-module VAT Module
-h2:main-data-sources Main data sources
+h1:customs-module Customs Module
+h2:required-customs-data Required customs data
+h3:country-of-origin-and-partner-country-information Country of origin and partner country information
+h3:customs-value-and-import-quantity Customs value and import quantity
+h3:preferential-tariff-treatment Preferential tariff treatment
+h3:exemptions-and-reliefs Exemptions and reliefs
+h3:baseline-customs-duty-calculation Baseline customs duty calculation
+h3:reform-simulation-for-tariff-changes Reform simulation for tariff changes
+h3:simulation-of-exemption-removal Simulation of exemption removal
+h3:customs-duty-baseline-and-simulation-process Customs duty baseline and simulation process
+h3:baseline-customs-duty-calculation-1 Baseline customs duty calculation
+h3:simulation-scenario-and-revenue-impact Simulation scenario and revenue impact
 h2:example-vat-results Example VAT results
 h2:vat-revenue-chart VAT revenue chart
+h2:section 
 h2:methodological-note Methodological note
 

@@ -1,31 +1,203 @@
-# VAT Module
+# Customs Module
 
-The VAT module estimates potential VAT revenue under the current policy structure and under alternative reform scenarios.
+The Customs Duty Module estimates current customs duty liabilities and simulates the revenue impact of changes in customs policy. It is based on anonymized administrative customs data, usually extracted from IT customs declaration systems. The module calculates baseline duty collections under existing MFN and preferential tariff treatments, then compares these results with simulated scenarios using alternative customs rates or specific duties. It helps users assess how tariff changes may affect import quantities, customs values, and overall customs revenue.
 
-## Main data sources
 
-The VAT module may use:
+## Required customs data
 
-- Supply and Use Tables;
-- Input-Output Tables;
-- household final consumption;
-- government final consumption;
-- NPISH final consumption;
-- intermediate consumption;
-- gross fixed capital formation;
-- VAT revenue data;
-- VAT policy rates and exemptions.
+The module requires anonymized administrative customs data, usually sourced from ASYCUDA or another national customs IT system. The data should include product classification by Harmonized System (HS), customs value, import quantities, tariff rates, country of origin, partner country, preferential treatment, exemptions, reliefs, and duty amounts. Data may be provided at transaction level or aggregated by customs unit, product code, importer group, or reporting period.
+
+### Country of origin and partner country information
+
+Country of origin and partner country information is used to identify where imported goods are produced and from where they are traded. This information is important for applying preferential tariff rates, trade agreements, and origin-based policy measures. It also allows customs revenue analysis by trading partner and source country.
+
+
+### Customs value and import quantity
+
+Customs value and import quantity are key variables for calculating customs duty. The customs value provides the taxable base for ad valorem duties, while import quantity is used for specific duties or for checking consistency in the data. These variables also support analysis of import patterns, effective tariff rates, and revenue by product category.
+
+
+### Preferential tariff treatment
+
+Preferential tariff treatment refers to reduced or zero tariff rates applied under trade agreements, regional arrangements, or special policy regimes. The module uses this information to distinguish between standard tariff liabilities and duties actually payable under preferential treatment. This allows users to estimate the fiscal cost of preferences and simulate changes to preferential regimes.
+
+
+### Exemptions and reliefs
+
+Exemptions and reliefs reduce or eliminate customs duty for selected imports, importers, sectors, or purposes. The module records these treatments separately from standard duty calculations so that their revenue effect can be identified. This helps users estimate the cost of exemptions and assess the impact of reducing or removing them.
+
+
+
+### Baseline customs duty calculation
+
+The baseline customs duty calculation estimates the duty payable under the existing customs policy framework. It applies current tariff rates, preferential treatment, exemptions, and reliefs to the customs value or quantity of imports. The baseline provides the reference point against which reform simulations and revenue impacts are measured.
+
+
+### Reform simulation for tariff changes
+
+The module can simulate the impact of changes in tariff rates on customs duty revenue. Users may test increases, reductions, harmonization, or restructuring of tariff rates by product, sector, country, or tariff band. The results show the difference between baseline revenue and simulated revenue under the proposed tariff reform.
+
+### Simulation of exemption removal
+
+The module can estimate the revenue effect of removing or reducing customs duty exemptions and reliefs. It recalculates customs duty as if selected exemptions no longer applied, while keeping other policy parameters unchanged. This helps policymakers assess the potential revenue gain from narrowing exemptions or improving exemption control.
+
+
+### Customs duty baseline and simulation process
+
+The Customs Duty Module uses administrative customs declaration data to estimate current customs duty collections and simulate the revenue impact of changes in customs rates. Each import record contains the product code, product description, country of origin, customs value, import quantity, supplementary unit, and the applicable customs treatment. Imports may be subject to ordinary MFN treatment or preferential treatment under a trade agreement. The treatment is determined by the country of origin and remains consistent for that country in the simulation. MFN imports use the MFN customs rate and, where applicable, the MFN specific duty. Preferential imports use the preferential customs rate and, where applicable, the preferential specific duty.
+
+### Baseline customs duty calculation
+
+The baseline calculation estimates customs duty under the current tariff regime. It uses the observed customs value and observed import quantity from the customs data. No behavioural adjustment is applied in the baseline because the observed data already reflects the current tariff system. For ad valorem duties, customs duty is calculated by multiplying the customs value by the applicable rate. For specific duties, customs duty is calculated by multiplying the import quantity by the specific duty rate. If both types of duty apply, total customs duty is the sum of the ad valorem duty and the specific duty.
+
+### Simulation scenario and revenue impact
+
+The simulation scenario introduces simulation MFN rates, simulation preferential rates, simulation specific duties, or a combination of these. Current rates are kept separately from simulation rates so that the model can compare the baseline situation with the simulated policy scenario. To estimate the effect of the simulation on import quantities, the model compares the current tariff burden with the simulated tariff burden. Specific duties are converted into an ad valorem equivalent by dividing the specific duty rate by the CIF unit price. The change in tariff burden is then used to estimate the change in import quantity using an import demand elasticity. The elasticity is applied only to the difference between the simulated tariff burden and the current tariff burden, not to the existing baseline rate. After the simulated import quantity is estimated, the model calculates the simulated customs value and simulated customs duty using the simulation rates. The revenue impact is calculated as the difference between simulated customs duty and baseline customs duty. Results may be shown at transaction level or aggregated by country of origin, treatment type, HS code, product description, or region.
+
+
 
 ## Example VAT results
 
-```{r}
-vat_table
+```{r,echo=FALSE}
+#vat_table
+#customs_tbl
+
+library(knitr)
+library(kableExtra)
+
+customs_tbl <- data.frame(
+  `HS Code` = c(
+    "0701 90 50",
+    "0702 00 00",
+    "0409 00 00",
+    "0901 11 00",
+    "1006 20 00",
+    "1701 99 10",
+    "1806 10 15",
+    "0805 10 20",
+    "0701 90 50",
+    "0703 10 19",
+    "0805 50 10"
+  ),
+  `Description` = c(
+    "Potatoes, fresh or chilled: Other",
+    "Tomatoes, fresh or chilled",
+    "Natural honey",
+    "Coffee, not roasted: Not decaffeinated",
+    "Husked brown rice",
+    "White sugar",
+    "Cocoa powder containing added sugar or other sweetening matter",
+    "Oranges, fresh or dried",
+    "Potatoes, fresh or chilled: Other",
+    "Onions and shallots, fresh or chilled: Other",
+    "Lemons and limes, fresh or dried"
+  ),
+  `Country of origin (ISO3)` = c(
+    "CHN", "CHN", "CHN", "CHN",
+    "MAR", "MAR", "MAR", "MAR",
+    "EGY", "EGY", "EGY"
+  ),
+  `Supplementary unit` = c(
+    "kg", "kg", "kg", "kg",
+    "kg", "kg", "kg", "kg",
+    "kg", "kg", "kg"
+  ),
+  `MFN customs rate` = c(
+    "15%", "15%", "15%", "15%",
+    "", "", "", "",
+    "", "", ""
+  ),
+  `MFN specific duty` = c(
+    "", "", "", "",
+    "", "", "", "",
+    "", "", ""
+  ),
+  `FTA preferential rate` = c(
+    "", "", "", "",
+    "5%", "5%", "5%", "5%",
+    "5%", "5%", "5%"
+  ),
+  `FTA specific duty` = c(
+    "", "", "", "",
+    "", "", "", "",
+    "0.5 per kg", "0.5 per kg", "0.5 per kg"
+  ),
+  `Customs value - MFN` = c(
+    10000, 8000, 12000, 6000,
+    "", "", "", "",
+    "", "", ""
+  ),
+  `Import quantity - MFN` = c(
+    5000, 4000, 3000, 1500,
+    "", "", "", "",
+    "", "", ""
+  ),
+  `Customs duty - MFN` = c(
+    10000 * 0.15,
+    8000 * 0.15,
+    12000 * 0.15,
+    6000 * 0.15,
+    "", "", "", "",
+    "", "", ""
+  ),
+  `Customs value - FTA` = c(
+    "", "", "", "",
+    5000, 9000, 7000, 4000,
+    20000, 15000, 10000
+  ),
+  `Import quantity - FTA` = c(
+    "", "", "", "",
+    2500, 6000, 3500, 1000,
+    2000, 500, 300
+  ),
+  `Customs duty - FTA` = c(
+    "", "", "", "",
+    5000 * 0.05,
+    9000 * 0.05,
+    7000 * 0.05,
+    4000 * 0.05,
+    20000 * 0.05 + 2000 * 0.5,
+    15000 * 0.05 + 500 * 0.5,
+    10000 * 0.05 + 300 * 0.5
+  ),
+  check.names = FALSE
+)
+
+customs_tbl |>
+  kable(
+    format = "html",
+    escape = FALSE,
+    align = c("l", "l", "c", rep("c", 10))
+  ) |>
+  kable_styling(
+    full_width = TRUE,
+    position = "left",
+    font_size = 8,
+    bootstrap_options = c("condensed", "bordered")
+  ) |>
+  row_spec(
+    0,
+    bold = TRUE,
+    color = "white",
+    background = "#2F75B5"
+  ) |>
+  column_spec(1, width = "8em") |>
+  column_spec(2, width = "24em") |>
+  column_spec(3, width = "8em") |>
+  column_spec(4:14, width = "8em")
 ```
 
 ## VAT revenue chart
 
 ```{r, fig.width=8, fig.height=5}
 vat_chart
+```
+
+##
+```{r confusion-matrix, echo=FALSE, out.width="80%"}
+knitr::include_graphics(
+  "https://raw.githubusercontent.com/jordans78/PredictingCustomerChurn/main/Documentation/Python/CaretEnviroment/ConfusionMatrix.png"
+)
 ```
 
 ## Methodological note
