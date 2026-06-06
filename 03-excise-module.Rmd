@@ -1,0 +1,71 @@
+# Excise Module
+
+The Excise Module estimates current excise duty liabilities and simulates the revenue impact of changes in health-related excise taxes. The module focuses on excise duties applied to selected goods that are commonly taxed for public health reasons, such as alcohol products, tobacco products, and sugar-sweetened beverages. These products are often subject to excise taxation because their consumption may generate negative health and social effects, and because excise policy can support both revenue mobilization and public health objectives.
+The module is usually based on administrative data from the tax administration. This may include excise tax declarations, taxpayer returns, production records, warehouse release data, sales data, or other information collected from registered producers, importers, distributors, or taxpayers. Administrative data is generally the preferred source because it reflects the actual tax base, the applicable legal treatment, and the excise duty collected under the current system.
+However, alternative data sources can also be used when administrative data is incomplete, unavailable, or needs to be complemented. These sources may include customs import data, household consumption surveys, industry statistics, market research databases such as Euromonitor, international trade databases such as UNCTAD, or any other source that provides reliable information on imports, domestic production, sales, or final consumption of alcohol products, tobacco products, and sugar-sweetened beverages. The choice of data source depends on the structure of the excise system, the availability of information, and the purpose of the simulation.
+
+## Required excise data
+
+The Excise Module requires data that identifies the excisable product, the tax base, the applicable excise treatment, and the amount of tax paid or payable. The data should normally include the product category, product description, taxable value, taxable quantity, unit of measurement, excise rate, exemptions or reliefs, taxpayer or importer group, reporting period, and excise duty amount.
+Data may be provided at transaction level or aggregated by product category, taxpayer, importer, region, reporting period, or excise type. If the module is based on alternative data sources, the data should provide sufficient information to estimate the taxable quantity or taxable value of final consumption.
+
+## Health-related excise goods
+
+The module focuses on three main groups of health-related excise goods: alcohol products, tobacco products, and sugar-sweetened beverages.
+Alcohol products may include beer, wine, spirits, cider, ready-to-drink alcoholic beverages, and other fermented or distilled products. These products may be taxed according to volume, alcohol content, taxable value, or a combination of these factors.
+
+Tobacco products may include cigarettes, cigars, cigarillos, smoking tobacco, heated tobacco products, and other nicotine-related products where covered by national legislation. These products may be taxed according to the number of sticks, packs, weight, taxable value, or a combination of specific and ad valorem components.
+Sugar-sweetened beverages may include carbonated soft drinks, energy drinks, sweetened juices, concentrates, syrups, powders, and other non-alcoholic beverages containing added sugar or sweeteners. These products may be taxed according to volume, sugar content, taxable value, or product category.
+
+The classification of these goods is important because each product group may have a different tax base, rate structure, unit of measurement, elasticity assumption, and policy objective. The module uses the product structure to apply the correct excise rules and to report results by health tax category.
+Tax base: value, quantity, alcohol content, tobacco units, or sugar content
+The excise tax base may be defined in several ways depending on the product. For ad valorem excise duties, the tax base is usually the taxable value of the good. For specific excise duties, the tax base is usually the physical quantity of the good, such as litres, hectolitres, kilograms, packs, sticks, or units.
+
+For alcohol products, the tax base may depend on the volume of beverage, litres of pure alcohol, alcohol strength, or taxable value. For tobacco products, the tax base may depend on the number of sticks, packs, kilograms, or taxable value. For sugar-sweetened beverages, the tax base may depend on litres of beverage, sugar content per litre, grams of sugar, or taxable value.
+When alternative data sources are used, the data may need to be converted into the relevant excise tax base. For example, final consumption data may need to be converted into litres of alcohol products, cigarette sticks or packs, kilograms of tobacco, litres of beverages, or grams of sugar depending on the applicable excise rules.
+
+## Excise rate structure
+
+Health-related excise duties can be structured as ad valorem, specific, or mixed duties.
+An ad valorem excise duty is calculated as a percentage of the taxable value. This type of duty changes with the price or declared value of the product. It may be used when the policy objective is to tax higher-value products more heavily or to maintain a link between tax liability and market value.
+A specific excise duty is calculated as a fixed amount per unit of quantity. This type of duty depends on the physical quantity or product characteristic rather than the value of the product. For health taxes, specific duties are often used because they can be linked more directly to the quantity consumed, such as litres of alcohol, cigarette sticks, packs, or litres of sugar-sweetened beverages.
+A mixed excise duty combines both ad valorem and specific components. In this case, the total excise duty is calculated as the sum of the value-based duty and the quantity-based duty. Some systems may also include minimum excise duties, where the payable amount cannot fall below a defined threshold.
+For alcohol products, the rate structure may be based on beverage volume, alcohol content, or product type. For tobacco products, the structure may include a specific duty per stick or pack, an ad valorem duty based on value, or a mixed system with a minimum tax. For sugar-sweetened beverages, the structure may include a fixed amount per litre, a tax based on sugar content, or different rates according to sugar concentration bands.
+
+## Exemptions, reliefs, and special treatment
+
+Health-related excise systems may include exemptions, reduced rates, reliefs, refunds, or special regimes. These provisions may apply to certain products, producers, uses, or transactions. For example, special treatment may apply to small producers, exports, products used for medical or industrial purposes, bonded warehouse arrangements, or products below a defined sugar or alcohol threshold.
+The module uses this information to distinguish between the benchmark excise liability and the actual excise duty payable under current law. This allows users to estimate the fiscal cost of exemptions and special treatments and to simulate reforms that remove, reduce, or modify these provisions.
+
+## Baseline excise duty calculation
+
+The baseline calculation estimates excise duty under the current policy framework. It uses the observed or estimated taxable value, taxable quantity, current excise rates, and current treatment rules. No behavioural adjustment is applied in the baseline because the baseline represents the current system and the current level of consumption, production, imports, or sales.
+For ad valorem duties, excise duty is calculated by multiplying the taxable value by the applicable excise rate. For specific duties, excise duty is calculated by multiplying the taxable quantity by the specific excise rate. For mixed duties, the ad valorem and specific components are calculated separately and then added together.
+If a minimum duty applies, the model compares the calculated duty with the minimum duty and applies the higher amount. If exemptions, reliefs, reduced rates, or special thresholds apply, the model adjusts the excise liability according to the relevant treatment.
+
+## Reform simulation for health tax policy changes
+
+The module can simulate the revenue impact of changes in health-related excise policy. Users may test increases or reductions in ad valorem rates, changes in specific rates, introduction of minimum duties, changes in sugar or alcohol thresholds, restructuring of product categories, expansion of the excise base, or removal of exemptions and reliefs.
+The simulation compares the current excise burden with the proposed excise burden. Where appropriate, the module may estimate the effect of the policy change on taxable quantities using a demand elasticity. This is particularly relevant for health taxes because changes in tax-inclusive prices may affect consumption of alcohol products, tobacco products, and sugar-sweetened beverages.
+For specific duties, the module may convert the duty into an ad valorem equivalent using the unit price or taxable value per unit. This makes it possible to compare the current and simulated tax burden in a consistent way. The change in tax burden is then used to estimate the change in taxable quantity, where an elasticity assumption is applied.
+After the simulated quantity and value are estimated, the module calculates the simulated excise duty using the proposed policy parameters. The revenue impact is calculated as the difference between simulated excise duty and baseline excise duty.
+
+## Simulation results
+
+The results show the expected excise revenue under current law and under the simulation scenario. The current law result represents the baseline revenue that would be collected without a policy change. The simulation result represents the revenue expected after applying the proposed changes. The fiscal impact is the difference between the two.
+Results may be presented in nominal terms, such as local currency units, and as a percentage of GDP. They may also be disaggregated by year, product category, taxpayer group, importer group, region, excise type, or treatment type. This allows users to identify which health tax categories generate the largest revenue effects.
+
+## Dashboard and analysis outputs
+
+The dashboard provides a visual summary of the excise simulation results. It may include summary boxes for baseline revenue, simulation revenue, and fiscal impact. It may also include charts showing the evolution of excise revenue over time, the distribution of revenue by health tax category, and the comparison between current law and simulation results.
+Additional outputs may show taxable quantities, average effective excise rates, revenue by excise type, revenue by product group, and the fiscal cost of exemptions or reduced rates. These outputs help users understand not only the total revenue effect, but also the distribution of the impact across alcohol products, tobacco products, and sugar-sweetened beverages.
+
+## Tax expenditures
+
+The module can also estimate excise-related tax expenditures. These represent the revenue forgone because of exemptions, reduced rates, reliefs, refunds, thresholds, or special treatments compared with a benchmark excise system.
+Tax expenditure results may be presented by year, health tax category, product group, treatment type, or taxpayer group. They may be shown in local currency units and as a percentage of GDP. This allows policymakers to assess the fiscal cost of special excise provisions and evaluate whether these provisions remain justified from a revenue, public health, social, or economic perspective.
+
+## Interactive Excise Simulation Tool
+
+A live version of the Excise Module is implemented as an interactive Shiny application. The Shiny interface allows users to select excise rates define reform scenarios, adjust excise rates, and run simulations directly through the web-based model. After the simulation is executed, the application automatically generates revenue impact tables, tax expenditure estimates, and dashboard visualizations. This live version provides a practical way to test alternative excise policy scenarios and immediately observe their fiscal effects.You can access the live version of the Excise Module through the following link:https://wb-data-analytics-app.shinyapps.io/excise-module/
+
