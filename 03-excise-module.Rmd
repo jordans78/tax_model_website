@@ -50,15 +50,42 @@ The simulation compares the current excise burden with the proposed excise burde
 For specific duties, the module may convert the duty into an ad valorem equivalent using the unit price or taxable value per unit. This makes it possible to compare the current and simulated tax burden in a consistent way. The change in tax burden is then used to estimate the change in taxable quantity, where an elasticity assumption is applied.
 After the simulated quantity and value are estimated, the module calculates the simulated excise duty using the proposed policy parameters. The revenue impact is calculated as the difference between simulated excise duty and baseline excise duty.
 
+
+
+```{r gui_excise, echo=FALSE, out.width="100%", fig.align="center"}
+knitr::include_graphics(
+  "https://raw.githubusercontent.com/jordans78/tax_model_website/main/img/ExciseModule/GUI_Excise.png"
+)
+```
+
+
+
+
 ## Simulation results
 
 The results show the expected excise revenue under current law and under the simulation scenario. The current law result represents the baseline revenue that would be collected without a policy change. The simulation result represents the revenue expected after applying the proposed changes. The fiscal impact is the difference between the two.
 Results may be presented in nominal terms, such as local currency units, and as a percentage of GDP. They may also be disaggregated by year, product category, taxpayer group, importer group, region, excise type, or treatment type. This allows users to identify which health tax categories generate the largest revenue effects.
 
+
+```{r excise_volume, echo=FALSE, out.width="100%", fig.align="center"}
+knitr::include_graphics(
+  "https://raw.githubusercontent.com/jordans78/tax_model_website/main/img/ExciseModule/Volume.png"
+)
+```
+
+
 ## Dashboard and analysis outputs
 
 The dashboard provides a visual summary of the excise simulation results. It may include summary boxes for baseline revenue, simulation revenue, and fiscal impact. It may also include charts showing the evolution of excise revenue over time, the distribution of revenue by health tax category, and the comparison between current law and simulation results.
 Additional outputs may show taxable quantities, average effective excise rates, revenue by excise type, revenue by product group, and the fiscal cost of exemptions or reduced rates. These outputs help users understand not only the total revenue effect, but also the distribution of the impact across alcohol products, tobacco products, and sugar-sweetened beverages.
+
+```{r excise_dashboard, echo=FALSE, out.width="100%", fig.align="center"}
+knitr::include_graphics(
+  "https://raw.githubusercontent.com/jordans78/tax_model_website/main/img/ExciseModule/Dashboard.png"
+)
+```
+
+
 
 ## Tax expenditures
 

@@ -1,0 +1,154 @@
+```{r page_setup_cit, include=FALSE}
+options(encoding = "UTF-8")
+try({
+  if (.Platform$OS.type == "windows") {
+    Sys.setlocale("LC_CTYPE", "English_United States.utf8")
+  } else {
+    Sys.setlocale("LC_CTYPE", "en_US.UTF-8")
+  }
+}, silent = TRUE)
+```
+
+
+# CIT Module
+
+The CIT Module estimates current corporate income tax liabilities and simulates the revenue impact of changes in corporate income tax policy. The module focuses on the taxation of companies, including small firms, medium-sized enterprises, large corporations, and other legal entities subject to corporate income tax. Corporate income tax is an important source of government revenue and is also a key instrument for assessing the impact of tax policy on firms, investment, profitability, and business activity.
+
+The module calculates corporate income tax liabilities under current law and compares them with liabilities under user-defined reform scenarios. In the current Shiny application, users can simulate changes in four main policy parameters: the turnover regime threshold, the turnover regime rate, the standard corporate income tax rate, and the fixed R&D tax credit amount. The results are presented through revenue impact tables, tax expenditure tables, effective tax rate indicators, and dashboard visualizations.
+
+The current demonstration version of the module is based on synthetic anonymized firm-level data. The synthetic data are designed to reproduce the structure required for corporate income tax simulation, including gross turnover, operating costs, accounting profit, taxable profit, loss-making status, R&D activity, firm characteristics, sampling weights, and macro-fiscal indicators. Because the data are synthetic, the results should be interpreted as illustrative rather than as estimates for a specific country or taxpayer population.
+
+## Required CIT data
+
+The CIT Module requires firm-level or grouped corporate income tax data containing the variables needed to calculate corporate income tax liability under current law and under reform scenarios. The data should describe the corporate taxpayer, the tax base, the applicable tax regime, and the variables needed to estimate final CIT liability.
+
+In the current Shiny implementation, the main firm-level variables include firm identifier, year, region, sector of activity, firm size, ownership type, number of employees, firm age, sampling weight, gross turnover, operating costs, accounting profit, taxable profit, loss-making status, profit margin, R&D activity, and R&D expenditure. These variables allow the model to determine whether a firm is taxed under the turnover regime or the standard profit-based CIT regime, calculate the relevant tax base, apply tax rates, apply the R&D tax credit, and estimate final CIT liability.
+
+The module also requires a policy parameter table by year. The key policy parameters are the turnover regime threshold, the turnover regime rate, the standard CIT rate, and the fixed R&D tax credit amount. These parameters define the current-law system and the reform scenarios selected by the user in the Shiny application.
+
+In addition, the module uses macro-fiscal indicators, such as nominal GDP and net CIT revenue, to express selected results as a percentage of GDP or as a percentage of CIT revenue. These indicators are used for reporting and interpretation, not for calculating firm-level CIT liability.
+
+For demonstration and testing purposes, the current version of the module uses synthetic anonymized firm-level data. The synthetic data reproduce the structure required by the model but do not represent actual taxpayers or a specific country. As a result, the outputs should be interpreted as illustrative simulation results rather than official revenue estimates.
+
+## Corporate income tax base
+
+The module focuses on the corporate income tax base. This may include accounting profit, taxable profit, gross turnover, and other relevant measures depending on national legislation. In a standard corporate income tax system, tax is usually calculated on taxable profit. Taxable profit is generally derived from accounting profit after applying the tax rules that determine which income is taxable and which expenses, deductions, or adjustments are allowed.
+
+Gross turnover represents the total business receipts or sales of the firm before subtracting costs. Accounting profit is calculated as gross turnover minus operating costs and other relevant expenses. Taxable profit is the amount of profit subject to corporate income tax after applying the rules of the tax system. In the simplified version of the module, taxable profit is calculated as the positive part of accounting profit. Loss-making firms under the standard CIT regime therefore have zero taxable profit and pay no profit-based CIT.
+
+Some corporate tax systems also include simplified or presumptive regimes for small firms. In such cases, firms below a turnover threshold may be taxed on gross turnover instead of taxable profit. The CIT Module distinguishes between firms taxed under a turnover regime and firms taxed under the standard profit-based CIT regime.
+
+## Turnover regime and standard CIT regime
+
+The CIT Module includes a simplified turnover regime for firms below a specified turnover threshold. Under this regime, firms with gross turnover at or below the threshold are taxed on turnover rather than profit. The tax liability for these firms is calculated by applying a turnover tax rate to gross turnover.
+
+Firms above the turnover threshold are taxed under the standard corporate income tax regime. For these firms, tax liability is calculated by applying the standard CIT rate to taxable profit. Loss-making firms outside the turnover regime have taxable profit equal to zero and therefore pay no standard profit-based CIT.
+
+This distinction is important because the tax base differs across regimes. Turnover-regime firms are taxed on gross turnover, while standard-regime firms are taxed on taxable profit. As a result, the module reports effective tax rates separately for the two regimes to avoid mixing different denominators.
+
+## Tax credits
+
+Corporate income tax systems may include tax credits that reduce final tax liability after gross tax liability has been calculated. These credits may be linked to research and development, investment, employment, training, regional development, or other policy objectives.
+
+The CIT Module includes a fixed research and development tax credit for firms with R&D activity. In this simplified structure, firms identified as having R&D activity receive a fixed credit amount. The credit is capped at gross corporate income tax liability, meaning that the credit cannot reduce final CIT liability below zero.
+
+The module calculates gross CIT liability first, then subtracts the allowable R&D tax credit to obtain final CIT liability. This allows users to simulate changes in the fixed R&D credit amount and estimate the resulting fiscal cost.
+
+## CIT rate structure
+
+Corporate income tax can be structured as a proportional, progressive, or mixed tax system. Many countries apply a single standard corporate income tax rate to taxable profit. Some systems apply reduced rates for small firms, special rates for specific sectors, or turnover-based taxes for firms below a turnover threshold.
+
+The simplified CIT Module uses two main regimes. Firms below the turnover threshold are taxed under the turnover regime, while other firms are taxed under the standard profit-based CIT regime. The key policy parameters in the Shiny application are the turnover regime threshold, the turnover regime rate, the standard CIT rate, and the fixed R&D tax credit amount.
+
+The module applies the relevant tax rule to each firm or firm group. For turnover-regime firms, the turnover tax rate is applied to gross turnover. For standard-regime firms, the standard CIT rate is applied to taxable profit. The R&D tax credit is then applied where relevant to calculate final CIT liability.
+
+
+
+## Baseline CIT calculation
+
+The baseline calculation estimates corporate income tax under the current policy framework. It uses observed or estimated gross turnover, operating costs, accounting profit, taxable profit, tax regime classification, current tax rates, current turnover thresholds, and current tax credits.
+
+The module first determines whether each firm is subject to the turnover regime or the standard CIT regime. Firms with gross turnover at or below the turnover regime threshold are taxed on turnover. Other firms are taxed on taxable profit. The module then calculates gross CIT liability and applies the R&D tax credit where relevant. The final result is the estimated corporate income tax liability under current law.
+
+The baseline result represents the expected corporate income tax revenue under current law. It can also be used to analyze the distribution of tax liability across firm size groups, turnover groups, profit groups, sectors, regions, ownership types, and tax regimes.
+
+## Reform simulation for CIT policy changes
+
+The module simulates the revenue and distributional impact of changes in corporate income tax policy. Users may test changes in the turnover regime threshold, the turnover regime rate, the standard CIT rate, and the fixed R&D tax credit amount.
+
+The simulation compares the current-law CIT burden with the proposed CIT burden. For each firm or firm group, the module recalculates the applicable tax regime, tax base, gross tax liability, tax credit, and final CIT liability under the reform scenario. The revenue impact is calculated as the difference between simulated CIT liability and baseline CIT liability.
+
+The current version of the module applies policy changes mechanically. This means that the model recalculates tax liabilities using the new policy parameters while keeping the underlying firm data unchanged. It does not include behavioural responses such as changes in reported profits, investment, incorporation decisions, or tax planning behaviour.
+
+
+
+```{r cit_gui, echo=FALSE, out.width="100%", fig.align="center"}
+knitr::include_graphics(
+  "https://raw.githubusercontent.com/jordans78/tax_model_website/main/img/CITModule/GUI_CIT.png"
+)
+```
+
+## Simulation results
+
+The results show expected CIT revenue under current law and under the simulation scenario. The current-law result represents the baseline revenue that would be collected without a policy change. The simulation result represents the revenue expected after applying the proposed policy changes. The fiscal impact is the difference between simulated CIT liability and current-law CIT liability.
+
+Results are presented in local currency units, usually in millions, and as a percentage of GDP. They may also be disaggregated by year, firm size, turnover group, profit group, sector, region, ownership type, tax regime, or other relevant classifications. This allows users to identify which firms are most affected by the reform and how the tax burden changes across the business sector.
+
+
+```{r cit_revenue, echo=FALSE, out.width="100%", fig.align="center"}
+knitr::include_graphics(
+  "https://raw.githubusercontent.com/jordans78/tax_model_website/main/img/CITModule/Revenue_CIT.png"
+)
+```
+
+
+## Effective tax rates
+
+The CIT Module reports effective tax rates separately for turnover-regime firms and standard-regime firms. This distinction is necessary because the two regimes use different tax bases.
+
+For turnover-regime firms, the effective tax rate is calculated as final CIT liability divided by gross turnover. For standard-regime firms, the effective tax rate is calculated as final CIT liability divided by taxable profit. This approach avoids misleading comparisons between firms taxed on turnover and firms taxed on profit.
+
+The module may also present effective tax rates by turnover decile, taxable-profit decile, sector, firm size, or tax regime. These outputs help users understand how the tax burden is distributed across firms and how policy reforms affect different parts of the corporate sector.
+
+## Dashboard and analysis outputs
+
+The Shiny dashboard provides a visual summary of the CIT simulation results. It includes sections for policy parameter selection, revenue impact, tax expenditures, and dashboard visualizations.
+
+The policy parameter section allows users to select a simulation year, choose a policy parameter, enter a new value, and apply the change either to the selected year or to the selected year and all following forecast years. The selected parameters are displayed in a table before the simulation is run.
+
+The revenue impact section reports current-law revenue, simulation revenue, fiscal impact, revenue by tax regime, R&D tax credits, and effective tax rates. The tax expenditure section reports the estimated fiscal cost of selected CIT preferences. The dashboard visualization section presents charts showing total CIT revenue, CIT revenue by regime, fixed R&D tax credits, effective tax rates, and the distribution of CIT revenue by turnover and profit groups.
+
+Additional outputs may show gross turnover, taxable profit, accounting profit, number of firms, loss-making firms, standard-regime firms, turnover-regime firms, tax credits, and final CIT liability by firm group. These outputs help users understand not only the total revenue effect, but also the distributional and structural impact of the proposed reform.
+
+
+```{r cit_dashboard, echo=FALSE, out.width="100%", fig.align="center"}
+knitr::include_graphics(
+  "https://raw.githubusercontent.com/jordans78/tax_model_website/main/img/CITModule/Dashboard_CIT.png"
+)
+```
+
+
+## Tax expenditures
+
+The module also estimates CIT-related tax expenditures. These represent revenue forgone because of preferential tax treatments compared with a benchmark corporate income tax system.
+
+In the simplified CIT Module, tax expenditures include the fiscal cost of the turnover regime and the fixed R&D tax credit. The turnover regime is compared with a benchmark system in which firms are taxed under the standard profit-based CIT regime. The R&D tax credit is compared with a benchmark system in which no R&D credit is provided. The module also estimates the combined benchmark gap from removing both the turnover regime and the R&D tax credit.
+
+Tax expenditure results are presented by year and treatment type. They may be shown in local currency units, usually in millions, and as a percentage of GDP or CIT revenue. This allows policymakers to assess the fiscal cost of CIT preferences and evaluate whether these provisions remain justified from a revenue, equity, simplicity, compliance, or economic-development perspective.
+
+
+```{r cit_tax_expenditures, echo=FALSE, out.width="100%", fig.align="center"}
+knitr::include_graphics(
+  "https://raw.githubusercontent.com/jordans78/tax_model_website/main/img/CITModule/TaxExpenditure_CIT.png"
+)
+```
+
+
+## Interactive CIT Simulation Tool
+
+The CIT Module is implemented as an interactive Shiny application. The Shiny interface allows users to select CIT policy parameters, define reform scenarios, adjust the turnover regime threshold, change the turnover regime rate, modify the standard CIT rate, change the fixed R&D tax credit amount, and run simulations directly through the web-based model.
+
+After the simulation is executed, the application automatically generates revenue impact tables, tax expenditure estimates, effective tax rate outputs, distributional analysis, and dashboard visualizations. This live version provides a practical way to test alternative corporate income tax policy scenarios and immediately observe their fiscal and distributional effects.
+You can access the live version of the Excise Module through the following link:https://wb-data-analytics-app.shinyapps.io/cit-module/
+
+

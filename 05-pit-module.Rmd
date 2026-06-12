@@ -1,0 +1,155 @@
+```{r page_setup_pit, include=FALSE}
+options(encoding = "UTF-8")
+try({
+  if (.Platform$OS.type == "windows") {
+    Sys.setlocale("LC_CTYPE", "English_United States.utf8")
+  } else {
+    Sys.setlocale("LC_CTYPE", "en_US.UTF-8")
+  }
+}, silent = TRUE)
+```
+
+
+# PIT Module
+
+The PIT Module estimates current personal income tax liabilities and simulates the revenue impact of changes in personal income tax policy. The module focuses on the taxation of individuals, including employees, self-employed persons, pensioners, taxpayers with capital income, and other individuals subject to personal income tax. Personal income tax is an important source of government revenue and is also a key instrument for assessing the distributional impact of tax policy.
+
+The module calculates personal income tax liabilities under current law and compares them with liabilities under user-defined reform scenarios. In the current Shiny application, users can simulate changes in four main policy groups: tax rates, tax brackets, deductions, and exemptions. The results are presented through revenue impact tables, tax expenditure tables, effective tax rate indicators, distributional analysis, and dashboard visualizations.
+
+The current demonstration version of the module is based on synthetic anonymized taxpayer-level data. The synthetic data are designed to reproduce the structure required for personal income tax simulation, including labor income, self-employment income, capital income, gross income, deductions, exemptions, taxable income, taxpayer characteristics, sampling weights, and macro-fiscal indicators. Because the data are synthetic, the results should be interpreted as illustrative rather than as estimates for a specific country or taxpayer population.
+
+## Required PIT data
+
+The PIT Module requires taxpayer-level or grouped personal income tax data containing the variables needed to calculate personal income tax liability under current law and under reform scenarios. The data should describe the taxpayer, the income base, the applicable tax treatment, and the variables needed to estimate final PIT liability.
+
+In the current Shiny implementation, the main taxpayer-level variables include taxpayer identifier, year, region, sector of activity, employment status, household type, age, number of dependents, sampling weight, gross wage income, gross self-employment income, gross rental income, gross interest income, gross dividend income, gross capital gain income, gross labor income, gross capital income, and total gross income. These variables allow the model to calculate taxable labor income, taxable capital income, deductions, exemptions, PIT from labor income, PIT from capital income, and total PIT liability.
+
+The module also requires a policy parameter table by year. The key policy groups are rates, brackets, deductions, and exemptions. The main policy parameters include the marginal PIT rates, the flat capital income tax rate, the PIT bracket thresholds, the standard deduction rate, the standard deduction cap, the business deduction rate, the personal exemption amount, and the dependent exemption amount. These parameters define the current-law system and the reform scenarios selected by the user in the Shiny application.
+
+In addition, the module uses macro-fiscal indicators, such as nominal GDP and net PIT revenue, to express selected results as a percentage of GDP or as a percentage of PIT revenue. These indicators are used for reporting and interpretation, not for calculating taxpayer-level PIT liability.
+
+For demonstration and testing purposes, the current version of the module uses synthetic anonymized taxpayer-level data. The synthetic data reproduce the structure required by the model but do not represent actual taxpayers or a specific country. As a result, the outputs should be interpreted as illustrative simulation results rather than official revenue estimates.
+
+## Personal income tax base
+
+The module focuses on the personal income tax base. This includes labor income, self-employment income, capital income, and total gross income. Labor income includes wages and self-employment income. Capital income includes rental income, interest income, dividend income, and capital gains.
+
+Gross income represents the total income received before deductions, exemptions, and other adjustments. In the simplified PIT Module, gross income is calculated as the sum of gross labor income and gross capital income. Gross labor income is the sum of wage income and self-employment income. Gross capital income is the sum of rental income, interest income, dividend income, and capital gains.
+
+Taxable labor income is calculated by subtracting deductions and exemptions from gross labor income. Taxable capital income is calculated from gross capital income and is taxed separately. Total taxable income is the sum of taxable labor income and taxable capital income. The model ensures that taxable income cannot be negative.
+
+The distinction between labor income and capital income is important because the two income sources are taxed differently in the simplified PIT Module. Labor income is taxed using a progressive PIT schedule, while capital income is taxed using a flat capital income tax rate.
+
+## Deductions and exemptions
+
+Personal income tax systems often include deductions, exemptions, allowances, and other forms of preferential treatment. These provisions reduce the tax base before the tax liability is calculated.
+
+The simplified PIT Module includes a standard deduction, a business deduction, a personal exemption, and a dependent exemption. The standard deduction is applied to gross labor income and is subject to a cap. The business deduction is applied to gross self-employment income. The personal exemption is a fixed amount applied to each taxpayer. The dependent exemption is calculated by multiplying the number of dependents by the dependent exemption amount.
+
+The module uses these parameters to distinguish between gross income, taxable income, and net income. It also allows users to simulate reforms that reduce, remove, cap, or expand deductions and exemptions. These provisions are also used in the tax expenditure calculation, where current law is compared with benchmark systems that remove selected deductions and exemptions.
+
+The current simplified PIT Module does not include social security contribution logic, surtaxes, minimum taxes, or local income taxes. The model focuses on PIT rates, brackets, deductions, exemptions, and the separate taxation of capital income.
+
+## PIT rate structure
+
+Personal income tax can be structured as a progressive, proportional, or mixed tax system. In a progressive system, higher levels of taxable income are taxed at higher marginal rates. In a proportional system, a single flat rate applies to the taxable income base. Some systems combine progressive rates on labor income with flat taxes on specific income sources.
+
+The simplified PIT Module uses a mixed structure. Labor income is taxed under a progressive PIT schedule with four marginal tax rates and three bracket thresholds. Capital income is taxed separately using a flat capital income tax rate.
+
+The module applies the relevant tax rule to each taxpayer or taxpayer group. For labor income, taxable labor income is allocated across the PIT brackets, and the appropriate marginal rate is applied to each bracket. The labor PIT liability is the sum of tax due across all brackets. For capital income, taxable capital income is multiplied by the flat capital income tax rate. Final PIT liability is calculated as the sum of PIT on labor income and PIT on capital income.
+
+The key policy parameters in the Shiny application are the PIT marginal tax rates, the capital income tax rate, the PIT bracket thresholds, the standard deduction rate, the standard deduction cap, the business deduction rate, the personal exemption amount, and the dependent exemption amount.
+
+## Baseline PIT calculation
+
+The baseline calculation estimates personal income tax under the current policy framework. It uses observed or estimated gross income, labor income, capital income, deductions, exemptions, current tax brackets, current tax rates, and current treatment rules.
+
+The module first prepares taxpayer data for each forecast year by applying income growth factors and sampling weights. It then calculates gross labor income, gross capital income, and total gross income. The model applies the standard deduction, business deduction, personal exemption, and dependent exemption to calculate taxable labor income. Capital income is treated separately and taxed using the capital income tax rate.
+
+The module then applies the progressive PIT schedule to taxable labor income and the flat capital income tax rate to taxable capital income. Final PIT liability is calculated as the sum of labor PIT and capital PIT. The baseline result represents the expected personal income tax revenue under current law.
+
+The baseline result can also be used to analyze the distribution of tax liability across income groups, employment statuses, household types, regions, sectors, and income sources.
+
+## Reform simulation for PIT policy changes
+
+The module simulates the revenue and distributional impact of changes in personal income tax policy. Users may test changes in tax rates, tax brackets, standard deduction parameters, business deduction parameters, personal exemptions, and dependent exemptions.
+
+The simulation compares the current-law PIT burden with the proposed PIT burden. For each taxpayer or taxpayer group, the module recalculates deductions, exemptions, taxable labor income, taxable capital income, labor PIT, capital PIT, and final PIT liability under the reform scenario. The revenue impact is calculated as the difference between simulated PIT liability and baseline PIT liability.
+
+The current version of the module applies policy changes mechanically. This means that the model recalculates tax liabilities using the new policy parameters while keeping the underlying taxpayer data unchanged. It does not include behavioural responses such as changes in declared income, labor supply, savings, investment, incorporation decisions, or tax planning behaviour.
+
+
+```{r pit_gui, echo=FALSE, out.width="100%", fig.align="center"}
+knitr::include_graphics(
+  "https://raw.githubusercontent.com/jordans78/tax_model_website/main/img/PITModule/GUI_PIT.png"
+)
+```
+
+
+## Simulation results
+
+The results show expected PIT revenue under current law and under the simulation scenario. The current-law result represents the baseline revenue that would be collected without a policy change. The simulation result represents the revenue expected after applying the proposed policy changes. The fiscal impact is the difference between simulated PIT liability and current-law PIT liability.
+
+Results are presented in local currency units, usually in millions, and as a percentage of GDP. They may also be disaggregated by year, income group, taxpayer type, employment status, household type, region, sector, income source, or tax treatment. This allows users to identify which groups are most affected by the reform and how the tax burden changes across the income distribution.
+
+The module also separates PIT revenue from labor income and PIT revenue from capital income. This distinction helps users understand whether changes in PIT revenue are driven mainly by labor-income taxation, capital-income taxation, or both.
+
+
+```{r pit_revenue, echo=FALSE, out.width="100%", fig.align="center"}
+knitr::include_graphics(
+  "https://raw.githubusercontent.com/jordans78/tax_model_website/main/img/PITModule/Revenue_PIT.png"
+)
+```
+
+
+## Effective tax rates
+
+The PIT Module reports effective or average tax rates to show how the tax burden changes across the income distribution. In the simplified PIT Module, the effective tax rate is calculated as final PIT liability divided by gross income.
+
+The model can present effective tax rates by income percentile groups and compare current-law results with simulation results. This allows users to assess how a policy reform affects taxpayers at different points of the income distribution.
+
+The module may also present tax liability and effective tax rates by income decile, income group, employment status, household type, region, sector, or income source. These outputs help users understand not only the aggregate fiscal impact of a reform, but also its distributional impact across taxpayers.
+
+## Dashboard and analysis outputs
+
+The Shiny dashboard provides a visual summary of the PIT simulation results. It includes sections for policy parameter selection, revenue impact, tax expenditures, and dashboard visualizations.
+
+The policy parameter section allows users to select a simulation year, choose a policy parameter, enter a new value, and apply the change either to the selected year or to the selected year and all following forecast years. The selected parameters are displayed in a table before the simulation is run.
+
+The revenue impact section reports current-law PIT revenue, simulation PIT revenue, fiscal impact, and results as a percentage of GDP. The tax expenditure section reports the estimated fiscal cost of selected PIT deductions and exemptions. The dashboard visualization section presents charts showing total PIT revenue, PIT revenue from labor and capital, effective tax rates by percentile group, PIT revenue by income decile, and the contribution to PIT revenue by income groups.
+
+Additional outputs may show gross income, labor income, capital income, taxable income, deductions, exemptions, number of taxpayers, PIT from labor income, PIT from capital income, final PIT liability, and average tax rates by taxpayer group. These outputs help users understand not only the total revenue effect, but also the distributional and structural impact of a proposed reform.
+
+
+```{r pit_dashboard, echo=FALSE, out.width="100%", fig.align="center"}
+knitr::include_graphics(
+  "https://raw.githubusercontent.com/jordans78/tax_model_website/main/img/PITModule/Dashboard_PIT.png"
+)
+```
+
+
+## Tax expenditures
+
+The module also estimates PIT-related tax expenditures. These represent revenue forgone because of deductions and exemptions compared with a benchmark personal income tax system.
+
+In the simplified PIT Module, tax expenditures include the fiscal cost of the standard deduction, the business deduction, the personal exemption, and the dependent exemption. The standard deduction is compared with a benchmark system in which the standard deduction rate and cap are set to zero. The business deduction is compared with a benchmark system in which the business deduction rate is set to zero. The personal exemption is compared with a benchmark system in which the personal exemption amount is set to zero. The dependent exemption is compared with a benchmark system in which the dependent exemption amount is set to zero.
+
+The module also estimates the combined benchmark gap from removing all deductions and exemptions together. This benchmark removes the standard deduction, the standard deduction cap, the business deduction, the personal exemption, and the dependent exemption.
+
+Tax expenditure results are presented by year, legal reference, and treatment type. They may be shown in local currency units, usually in millions, and as a percentage of GDP or PIT revenue. This allows policymakers to assess the fiscal cost of PIT preferences and evaluate whether these provisions remain justified from a revenue, equity, simplicity, compliance, social, or economic perspective.
+
+
+```{r pit_tax_expenditures, echo=FALSE, out.width="100%", fig.align="center"}
+knitr::include_graphics(
+  "https://raw.githubusercontent.com/jordans78/tax_model_website/main/img/PITModule/TaxExpenditure_PIT.png"
+)
+```
+
+
+## Interactive PIT Simulation Tool
+
+The PIT Module is implemented as an interactive Shiny application. The Shiny interface allows users to select PIT policy parameters, define reform scenarios, adjust PIT bracket thresholds, change marginal PIT rates, modify the flat capital income tax rate, change deduction parameters, modify exemption amounts, and run simulations directly through the web-based model.
+
+After the simulation is executed, the application automatically generates revenue impact tables, tax expenditure estimates, effective tax rate outputs, distributional analysis, and dashboard visualizations. This live version provides a practical way to test alternative personal income tax policy scenarios and immediately observe their fiscal and distributional effects.
+
+You can access the live version of the PIT Module through the following link: https://wb-data-analytics.shinyapps.io/pit-module/
