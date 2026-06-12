@@ -1,56 +1,78 @@
+```{r page_setup_excise, include=FALSE}
+options(encoding = "UTF-8")
+try({
+  if (.Platform$OS.type == "windows") {
+    Sys.setlocale("LC_CTYPE", "English_United States.utf8")
+  } else {
+    Sys.setlocale("LC_CTYPE", "en_US.UTF-8")
+  }
+}, silent = TRUE)
+```
+
 # Excise Module
 
-The Excise Module estimates current excise duty liabilities and simulates the revenue impact of changes in health-related excise taxes. The module focuses on excise duties applied to selected goods that are commonly taxed for public health reasons, such as alcohol products, tobacco products, and sugar-sweetened beverages. These products are often subject to excise taxation because their consumption may generate negative health and social effects, and because excise policy can support both revenue mobilization and public health objectives.
-The module is usually based on administrative data from the tax administration. This may include excise tax declarations, taxpayer returns, production records, warehouse release data, sales data, or other information collected from registered producers, importers, distributors, or taxpayers. Administrative data is generally the preferred source because it reflects the actual tax base, the applicable legal treatment, and the excise duty collected under the current system.
-However, alternative data sources can also be used when administrative data is incomplete, unavailable, or needs to be complemented. These sources may include customs import data, household consumption surveys, industry statistics, market research databases such as Euromonitor, international trade databases such as UNCTAD, or any other source that provides reliable information on imports, domestic production, sales, or final consumption of alcohol products, tobacco products, and sugar-sweetened beverages. The choice of data source depends on the structure of the excise system, the availability of information, and the purpose of the simulation.
+The Excise Module estimates baseline excise duty liabilities and simulates the fiscal, price, and volume effects of changes in excise policy parameters. The current implementation focuses on alcohol products: Beer, Spirits, and Wine. It is designed to show how an alcohol excise model can combine product volumes, retail prices, excise rates, VAT rates, tariffs, alcohol-by-volume information, macroeconomic assumptions, elasticities, and retail margins to estimate baseline and reform-scenario outcomes.
+
+The module uses artificial synthetic input data generated directly in R. The Shiny application imports the generated model input file at startup and then runs the excise calculation scripts inside the same R session. The synthetic data are designed for demonstration and training purposes. They reproduce the structure required by the model, but they do not represent official excise returns, taxpayer declarations, customs data, market data, or a specific country.
+
+The Excise Module estimates business-as-usual outcomes and compares them with a simulation scenario. Users can choose the simulation year, select an excise product, choose the type of excise, enter a simulated excise rate, and optionally apply the change to following years. Users can also adjust price elasticity assumptions, income elasticity, and the retail margin. After the simulation is run, the module produces volume tables, nominal excise revenue tables, real excise revenue tables, and dashboard visualizations.
 
 ## Required excise data
 
-The Excise Module requires data that identifies the excisable product, the tax base, the applicable excise treatment, and the amount of tax paid or payable. The data should normally include the product category, product description, taxable value, taxable quantity, unit of measurement, excise rate, exemptions or reliefs, taxpayer or importer group, reporting period, and excise duty amount.
-Data may be provided at transaction level or aggregated by product category, taxpayer, importer, region, reporting period, or excise type. If the module is based on alternative data sources, the data should provide sufficient information to estimate the taxable quantity or taxable value of final consumption.
+The Excise Module requires input objects that describe the alcohol excise base, the applicable tax rates, the policy structure, behavioural assumptions, and macroeconomic assumptions. In the current Shiny implementation, these objects are loaded from `excise_synthetic_model_inputs.RData`.
 
-## Health-related excise goods
+The required model inputs are:
 
-The module focuses on three main groups of health-related excise goods: alcohol products, tobacco products, and sugar-sweetened beverages.
-Alcohol products may include beer, wine, spirits, cider, ready-to-drink alcoholic beverages, and other fermented or distilled products. These products may be taxed according to volume, alcohol content, taxable value, or a combination of these factors.
+- `excise_macro_alc`
+- `excise_volume_alc`
+- `excise_prices_alc`
+- `excise_bau_rates_alc`
+- `excise_sim_rates_alc`
+- `excise_vat_alc`
+- `excise_tariffs_alc`
+- `excise_abv_alc`
+- `excise_inc_elasticities_alc`
+- `excise_price_elasticities_alc`
+- `excise_retail_margins_alc`
+- `excise_scenarios_alc`
+- `excise_base_calc_alc`
+- `excise_rate_structure_alc`
 
-Tobacco products may include cigarettes, cigars, cigarillos, smoking tobacco, heated tobacco products, and other nicotine-related products where covered by national legislation. These products may be taxed according to the number of sticks, packs, weight, taxable value, or a combination of specific and ad valorem components.
-Sugar-sweetened beverages may include carbonated soft drinks, energy drinks, sweetened juices, concentrates, syrups, powders, and other non-alcoholic beverages containing added sugar or sweeteners. These products may be taxed according to volume, sugar content, taxable value, or product category.
+The macroeconomic table contains the forecast years, GDP growth, inflation, population, population growth, and the CPI path used to convert nominal outcomes into real terms. The volume table contains product-level quantities by flow. The price table contains product-level retail prices by flow. The model uses four flows: off-trade, on-trade, domestic, and import.
 
-The classification of these goods is important because each product group may have a different tax base, rate structure, unit of measurement, elasticity assumption, and policy objective. The module uses the product structure to apply the correct excise rules and to report results by health tax category.
-Tax base: value, quantity, alcohol content, tobacco units, or sugar content
-The excise tax base may be defined in several ways depending on the product. For ad valorem excise duties, the tax base is usually the taxable value of the good. For specific excise duties, the tax base is usually the physical quantity of the good, such as litres, hectolitres, kilograms, packs, sticks, or units.
+The policy tables define current excise rates, simulated excise rates, VAT rates, tariffs, alcohol-by-volume values, excise base definitions, and the excise rate structure. The rate structure identifies whether the excise is ad valorem, specific by volume, or specific by alcohol content. The scenario table identifies the model horizon through scenario labels such as `t0`, `t1`, `t2`, and later years.
 
-For alcohol products, the tax base may depend on the volume of beverage, litres of pure alcohol, alcohol strength, or taxable value. For tobacco products, the tax base may depend on the number of sticks, packs, kilograms, or taxable value. For sugar-sweetened beverages, the tax base may depend on litres of beverage, sugar content per litre, grams of sugar, or taxable value.
-When alternative data sources are used, the data may need to be converted into the relevant excise tax base. For example, final consumption data may need to be converted into litres of alcohol products, cigarette sticks or packs, kilograms of tobacco, litres of beverages, or grams of sugar depending on the applicable excise rules.
+## Alcohol products and tax base
+
+The current version of the module focuses on three alcohol products: Beer, Spirits, and Wine. Each product has synthetic information on volumes, prices, alcohol content, excise rates, VAT rates, tariffs, income elasticity, price elasticity, and retail margins.
+
+The model calculates outcomes separately for off-trade, on-trade, domestic, and import flows. This distinction allows the model to capture differences between retail-market sales, domestic-market flows, and imported products. Imports also include import duties in the price decomposition.
+
+The excise base can be defined as an ex-factory price base or as a net-of-tax base. For an ex-factory price base, the model removes VAT and retail margin from the retail price and then calculates the excise base using the excise rate. For a net-of-tax base, the model derives the base from the tax-inclusive price by removing VAT and excise.
 
 ## Excise rate structure
 
-Health-related excise duties can be structured as ad valorem, specific, or mixed duties.
-An ad valorem excise duty is calculated as a percentage of the taxable value. This type of duty changes with the price or declared value of the product. It may be used when the policy objective is to tax higher-value products more heavily or to maintain a link between tax liability and market value.
-A specific excise duty is calculated as a fixed amount per unit of quantity. This type of duty depends on the physical quantity or product characteristic rather than the value of the product. For health taxes, specific duties are often used because they can be linked more directly to the quantity consumed, such as litres of alcohol, cigarette sticks, packs, or litres of sugar-sweetened beverages.
-A mixed excise duty combines both ad valorem and specific components. In this case, the total excise duty is calculated as the sum of the value-based duty and the quantity-based duty. Some systems may also include minimum excise duties, where the payable amount cannot fall below a defined threshold.
-For alcohol products, the rate structure may be based on beverage volume, alcohol content, or product type. For tobacco products, the structure may include a specific duty per stick or pack, an ad valorem duty based on value, or a mixed system with a minimum tax. For sugar-sweetened beverages, the structure may include a fixed amount per litre, a tax based on sugar content, or different rates according to sugar concentration bands.
+The Excise Module supports three excise rate structures:
 
-## Exemptions, reliefs, and special treatment
+- `ad_valorem`
+- `specific_vol`
+- `specific_abv`
 
-Health-related excise systems may include exemptions, reduced rates, reliefs, refunds, or special regimes. These provisions may apply to certain products, producers, uses, or transactions. For example, special treatment may apply to small producers, exports, products used for medical or industrial purposes, bonded warehouse arrangements, or products below a defined sugar or alcohol threshold.
-The module uses this information to distinguish between the benchmark excise liability and the actual excise duty payable under current law. This allows users to estimate the fiscal cost of exemptions and special treatments and to simulate reforms that remove, reduce, or modify these provisions.
+For an ad valorem excise, the excise per unit is calculated as the excise base multiplied by the applicable excise rate. For a specific excise by volume, the excise per unit is the rate itself. For a specific excise by alcohol content, the excise per unit is calculated using the alcohol-by-volume value and the applicable rate.
+
+The baseline calculation uses the current excise rate table and the baseline rate structure. The simulation calculation uses the updated simulation-rate table created by the Shiny interface. The user-selected changes are stored in `excise_sim_rates_alc_updated` and passed to the simulation calculator.
+
+The current Shiny application allows users to enter the simulated excise rate, select the type of excise, and apply the change either only to the selected year or to all following years. In the demonstration horizon, `t0` is the base year and `t1` still uses business-as-usual rates. Simulation policy-rate changes therefore begin from `t2`.
 
 ## Baseline excise duty calculation
 
-The baseline calculation estimates excise duty under the current policy framework. It uses the observed or estimated taxable value, taxable quantity, current excise rates, and current treatment rules. No behavioural adjustment is applied in the baseline because the baseline represents the current system and the current level of consumption, production, imports, or sales.
-For ad valorem duties, excise duty is calculated by multiplying the taxable value by the applicable excise rate. For specific duties, excise duty is calculated by multiplying the taxable quantity by the specific excise rate. For mixed duties, the ad valorem and specific components are calculated separately and then added together.
-If a minimum duty applies, the model compares the calculated duty with the minimum duty and applies the higher amount. If exemptions, reliefs, reduced rates, or special thresholds apply, the model adjusts the excise liability according to the relevant treatment.
+The baseline calculation estimates excise outcomes under the business-as-usual policy framework. It uses volumes, prices, current excise rates, VAT rates, tariffs, macroeconomic assumptions, ABV values, elasticities, retail margins, scenario information, base definitions, and the baseline excise rate structure.
 
-## Reform simulation for health tax policy changes
+The baseline script first constructs the base-year price decomposition. It calculates the excise base, excise per unit, VAT component, retail margin component, import duties for imports, and net-of-tax prices for each product and flow. It then prepares scenario-specific helper tables for later years using the macroeconomic forecast path.
 
-The module can simulate the revenue impact of changes in health-related excise policy. Users may test increases or reductions in ad valorem rates, changes in specific rates, introduction of minimum duties, changes in sugar or alcohol thresholds, restructuring of product categories, expansion of the excise base, or removal of exemptions and reliefs.
-The simulation compares the current excise burden with the proposed excise burden. Where appropriate, the module may estimate the effect of the policy change on taxable quantities using a demand elasticity. This is particularly relevant for health taxes because changes in tax-inclusive prices may affect consumption of alcohol products, tobacco products, and sugar-sweetened beverages.
-For specific duties, the module may convert the duty into an ad valorem equivalent using the unit price or taxable value per unit. This makes it possible to compare the current and simulated tax burden in a consistent way. The change in tax burden is then used to estimate the change in taxable quantity, where an elasticity assumption is applied.
-After the simulated quantity and value are estimated, the module calculates the simulated excise duty using the proposed policy parameters. The revenue impact is calculated as the difference between simulated excise duty and baseline excise duty.
+For the base year, the model calculates excise per unit and total expenditure checks for each flow. For later years, the model updates excise bases, prices, volumes, and revenue outcomes using inflation, growth, elasticities, and the excise policy settings. The baseline output is used as the reference case against which simulation results are compared.
 
-
+The baseline calculator produces business-as-usual outputs for volumes, prices, industry revenue, excise revenue, and real excise revenue. These outputs are later combined with the simulation outputs in the chart-preparation script.
 
 ```{r gui_excise, echo=FALSE, out.width="100%", fig.align="center"}
 knitr::include_graphics(
@@ -60,12 +82,29 @@ knitr::include_graphics(
 
 
 
+## Reform simulation for alcohol excise policy changes
+
+The simulation calculation estimates the effect of user-defined alcohol excise policy changes. The Shiny app allows the user to select the product, year, excise type, and simulated excise rate. The selected changes are shown in the Selected Simulation Parameters table. When the simulation is run, the app rebuilds `excise_sim_rates_alc_updated` from the original simulation rate table and the staged user changes.
+
+The simulation calculator uses the updated simulation-rate table while preserving the original business-as-usual rates for the baseline calculation. This separation is important because the baseline and simulation must not move together. The baseline calculator uses the original rates, while the simulation calculator uses the updated rates.
+
+The simulation also uses behavioural assumptions. The Shiny app provides sliders for price elasticity for Beer, Spirits, and Wine, a common income elasticity, and a retail margin assumption. These values are assigned into the R session before the model scripts are sourced, so the simulation uses the current values selected by the user.
+
+The model applies policy changes mechanically through prices, tax burdens, and elasticity-based volume responses. It does not estimate broader macroeconomic feedback, cross-product substitution beyond the modelled elasticity structure, industry strategic responses, illicit-market responses, or administrative compliance changes.
 
 ## Simulation results
 
-The results show the expected excise revenue under current law and under the simulation scenario. The current law result represents the baseline revenue that would be collected without a policy change. The simulation result represents the revenue expected after applying the proposed changes. The fiscal impact is the difference between the two.
-Results may be presented in nominal terms, such as local currency units, and as a percentage of GDP. They may also be disaggregated by year, product category, taxpayer group, importer group, region, excise type, or treatment type. This allows users to identify which health tax categories generate the largest revenue effects.
+The Results section of the Shiny application contains three output tables:
 
+- Volume
+- Nominal Revenues
+- Real Revenues
+
+The volume table compares business-as-usual and simulation volumes by year, product, and trade flow. It includes off-trade and on-trade volume outcomes and calculates percentage changes between the business-as-usual and simulation scenarios.
+
+The nominal revenue table reports nominal excise revenue by product and flow. It includes off-trade, on-trade, domestic, and import excise revenue outcomes. The real revenue table reports the corresponding real excise revenue values using the CPI path from the macroeconomic input table.
+
+The simulation result is compared with the baseline result. The fiscal effect is the difference between simulation revenue and business-as-usual revenue. Because the model also updates prices and volumes, the simulation can show both the direct effect of the rate change and the indirect effect through behavioural volume responses.
 
 ```{r excise_volume, echo=FALSE, out.width="100%", fig.align="center"}
 knitr::include_graphics(
@@ -76,8 +115,16 @@ knitr::include_graphics(
 
 ## Dashboard and analysis outputs
 
-The dashboard provides a visual summary of the excise simulation results. It may include summary boxes for baseline revenue, simulation revenue, and fiscal impact. It may also include charts showing the evolution of excise revenue over time, the distribution of revenue by health tax category, and the comparison between current law and simulation results.
-Additional outputs may show taxable quantities, average effective excise rates, revenue by excise type, revenue by product group, and the fiscal cost of exemptions or reduced rates. These outputs help users understand not only the total revenue effect, but also the distribution of the impact across alcohol products, tobacco products, and sugar-sweetened beverages.
+The dashboard provides a visual summary of the alcohol excise simulation results. The Shiny interface includes two dashboard groups:
+
+- Impact: Volume & Excise
+- Prices: Nominal vs Real
+
+The Impact dashboard shows excise revenue and volume outcomes over time. It compares business-as-usual and simulation results for each alcohol product. Users can switch between Beer, Spirits, and Wine using the dashboard controls.
+
+The Prices dashboard shows nominal and real retail-price outcomes. It compares business-as-usual and simulation prices over the forecast horizon. This helps users see how the simulated excise-policy change affects retail prices and how inflation changes the interpretation of nominal price paths.
+
+The chart-preparation script combines the business-as-usual and simulation outputs into `merged_bu_sim_alc`. This combined dataset is used by the dashboard functions and by the tables. It contains scenario labels, years, products, source indicators, volumes, prices, nominal excise revenues, and real excise revenues.
 
 ```{r excise_dashboard, echo=FALSE, out.width="100%", fig.align="center"}
 knitr::include_graphics(
@@ -86,13 +133,16 @@ knitr::include_graphics(
 ```
 
 
+## Current implementation scope
 
-## Tax expenditures
+The current Shiny implementation is an Alcohol Excise Module. It does not currently implement tobacco or sugar-sweetened beverage calculations. It also does not currently include an excise tax expenditure table. The active outputs are volume, nominal excise revenue, real excise revenue, and dashboards for volume, excise revenue, nominal prices, and real prices.
 
-The module can also estimate excise-related tax expenditures. These represent the revenue forgone because of exemptions, reduced rates, reliefs, refunds, thresholds, or special treatments compared with a benchmark excise system.
-Tax expenditure results may be presented by year, health tax category, product group, treatment type, or taxpayer group. They may be shown in local currency units and as a percentage of GDP. This allows policymakers to assess the fiscal cost of special excise provisions and evaluate whether these provisions remain justified from a revenue, public health, social, or economic perspective.
+The model is still useful for broader excise-policy demonstration because it includes the core mechanics needed for health-related excise simulation: product volumes, prices, ad valorem and specific excise structures, alcohol content, elasticity assumptions, inflation adjustments, and comparison of baseline and simulation scenarios.
 
 ## Interactive Excise Simulation Tool
 
-A live version of the Excise Module is implemented as an interactive Shiny application. The Shiny interface allows users to select excise rates define reform scenarios, adjust excise rates, and run simulations directly through the web-based model. After the simulation is executed, the application automatically generates revenue impact tables, tax expenditure estimates, and dashboard visualizations. This live version provides a practical way to test alternative excise policy scenarios and immediately observe their fiscal effects.You can access the live version of the Excise Module through the following link:https://wb-data-analytics-app.shinyapps.io/excise-module/
+A live version of the Excise Module is implemented as an interactive Shiny application. The Shiny interface allows users to select products, choose the simulation year, define excise-rate changes, select the excise structure, adjust elasticity and retail-margin assumptions, and run simulations directly through the web-based model.
 
+After the simulation is executed, the application automatically generates volume tables, nominal excise revenue tables, real excise revenue tables, and dashboard visualizations. This live version provides a practical way to test alternative alcohol excise policy scenarios and immediately observe their fiscal, price, and volume effects.
+
+You can access the live version of the Excise Module through the following link: https://wb-data-analytics-app.shinyapps.io/excise-module/

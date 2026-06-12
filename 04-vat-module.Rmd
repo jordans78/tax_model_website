@@ -1,61 +1,79 @@
+```{r page_setup_vat, include=FALSE}
+options(encoding = "UTF-8")
+try({
+  if (.Platform$OS.type == "windows") {
+    Sys.setlocale("LC_CTYPE", "English_United States.utf8")
+  } else {
+    Sys.setlocale("LC_CTYPE", "en_US.UTF-8")
+  }
+}, silent = TRUE)
+```
+
 # VAT Gap Module
 
-The VAT Gap Module estimates potential VAT liabilities and simulates the revenue impact of changes in VAT policy and compliance assumptions. The module focuses on VAT applied to final consumption, intermediate consumption, investment, imports, and other taxable uses of goods and services in the economy. VAT is usually one of the most important sources of tax revenue, and VAT gap analysis can support revenue mobilization, compliance risk assessment, tax expenditure analysis, and policy reform design.
+The VAT Gap Module estimates potential VAT liabilities and simulates the revenue impact of changes in VAT policy parameters. The module focuses on VAT applied to goods and services by product group, industry, and use category. It uses synthetic Supply and Use Table / Input-Output Table data, VAT policy parameters by CPA product, household expenditure data, COICOP classifications, growth factors, and macro-fiscal indicators.
 
-The module is usually based on statistical data rather than administrative tax data. The main data sources are Supply and Use Tables and Input-Output Tables. These tables provide a structured representation of the economy by product, industry, and use category, and allow the model to estimate the potential VAT base under the current VAT system. Because these are national accounts and statistical data sources, they do not directly reflect taxpayer declarations or actual VAT payments. Instead, they provide an economy-wide estimate of transactions that may be subject to VAT.
+The module compares VAT outcomes under a baseline system and a user-defined simulation scenario. In the current Shiny application, users can select a simulation year, choose a product or industry code, adjust the exempt share, reduced-rate share, standard-rate share, preferential VAT rate, and standard VAT rate, and apply the change to the selected year or to all following forecast years. The results are presented through revenue impact tables, tax expenditure tables, VAT gap metrics, sectoral revenue charts, and household distributional outputs.
 
-The calculation is also based on Household Budget Survey data. Household Budget Survey data may be available in aggregate format, for example by COICOP 4-digit category, or at a disaggregated micro level. Aggregate HBS data can be used to distribute final household consumption across VAT categories, while micro-level HBS data allows more detailed analysis by household type, income group, region, or consumption pattern. The use of HBS data is particularly important where VAT rates, exemptions, or reduced rates differ across consumption categories.
-
-Supply and Use Tables and Input-Output Tables are not usually published every year. Depending on the country, SUTs are often published with a lag of at least three years, while IOTs may be published every five years or more frequently. This means that VAT gap modeling is often based on statistical data that is already several years old. For this reason, extrapolation is often required to update the tables to more recent years. Extrapolation may use national accounts growth rates, price indices, household consumption trends, import data, sectoral output indicators, or other macroeconomic and statistical sources.
+The current demonstration version of the module is based on synthetic anonymized data. The synthetic data reproduce the structure required by the model, including SUT / IOT matrices, VAT rate and taxability parameters, household expenditure data, CPA-COICOP concordance, growth factors, and macro-fiscal indicators. Because the data are synthetic, the results should be interpreted as illustrative simulation results rather than official VAT gap estimates.
 
 ## Required VAT data
 
-The VAT Gap Module requires data that identifies the VAT base, the applicable VAT treatment, and the potential VAT liability under current law. The data should normally include product category, industry or activity, use category, final consumption, intermediate consumption, gross fixed capital formation, imports, exports, VAT rate, exemptions, reduced rates, zero-rating, non-deductible input VAT, and other special VAT treatments.
+The VAT Gap Module requires statistical and policy data that identify the VAT base, the applicable VAT treatment, and the potential VAT liability under current law and under reform scenarios. The core statistical data are Supply and Use Table / Input-Output Table data. In the current implementation, the main SUT / IOT inputs are supply at product-industry level, use at purchaser prices, use at basic prices, and observed VAT values.
 
-The core statistical data may be provided through Supply and Use Tables or Input-Output Tables. These tables should provide sufficient detail to distinguish between taxable, exempt, zero-rated, and out-of-scope transactions. Where possible, the data should identify the value of goods and services by product group and by user, including households, government, non-profit institutions, businesses, capital formation, exports, and imports.
+The module also requires VAT policy parameters by CPA product or product-industry group. These policy parameters include the current exempt share, current reduced-rate share, current fully taxable share, preferential VAT rate, standard VAT rate, simulated exempt share, simulated preferential-rate share, and simulated standard-rate share. These parameters define how each product group is treated under the baseline and simulation scenarios.
 
-Household Budget Survey data is also required to improve the allocation of household final consumption to VAT categories. This data may be provided in aggregate format by COICOP 4-digit category or in disaggregated micro format. When micro data is available, the module can provide additional distributional outputs, including the impact of VAT policy by household income group, expenditure group, region, or other household characteristics.
+Household Budget Survey and COICOP data are also used. The household data provide expenditure by household and COICOP category. The COICOP information is linked to CPA products using a CPA-COICOP concordance. This allows the module to estimate household-level VAT burdens and distributional effects by consumption decile or centile.
+
+The module also uses forecast growth factors and macro-fiscal indicators. Growth factors are used to project VAT bases and revenues across the forecast horizon. Macro-fiscal indicators, including nominal GDP and net VAT revenue, are used to express selected outputs as a percentage of GDP or to compare modelled VAT revenue with fiscal aggregates.
+
+For demonstration and testing purposes, the current version of the module uses synthetic data. These data reproduce the structure required by the VAT model but do not represent official national accounts, official household survey records, actual VAT returns, or a specific country.
 
 ## VAT-related goods and services
 
-The module focuses on goods and services that form part of the VAT base. These may include household consumption goods, services, imports, intermediate inputs, investment goods, and other taxable transactions. The treatment of each product or service depends on the national VAT legislation and the applicable VAT rate structure.
+The module focuses on goods and services classified by CPA product or product-industry code. Each product group is linked to a VAT treatment under the baseline and simulation scenarios. The treatment can include exemption, reduced-rate taxation, or standard-rate taxation.
 
-Goods and services may be subject to the standard VAT rate, reduced VAT rates, zero-rating, exemptions, or special treatment. Standard-rated goods and services are taxed at the main VAT rate. Reduced-rated goods and services are taxed at lower rates for policy, social, or administrative reasons. Zero-rated goods and services are taxed at a rate of zero, usually allowing input VAT recovery. Exempt goods and services are not taxed on output, but input VAT may not be recoverable, which can generate embedded VAT.
+The model distinguishes between different uses of goods and services. These include intermediate consumption by businesses, household final consumption, final consumption by non-profit institutions serving households, final consumption by government, capital formation, exports, imports, trade and transport margins, and taxes less subsidies on products.
 
-The classification of goods and services is important because each category may have a different VAT treatment, effective tax rate, compliance assumption, and policy objective. The module uses the product structure from SUTs, IOTs, and HBS data to apply the correct VAT rules and to report results by VAT category.
+This structure is important because VAT is not calculated only from household consumption. The model also estimates VAT related to non-deductible intermediate inputs and institutional sectors where VAT may become a final cost. At the same time, exports are treated separately because they do not generate final VAT liability in the same way as domestic taxable consumption.
 
 ## Tax base: final consumption, intermediate consumption, imports, and investment
 
-The VAT tax base may be defined in several ways depending on the structure of the VAT system and the available statistical data. In principle, VAT is intended to tax final consumption, but the actual VAT base may also include non-deductible VAT on intermediate consumption, exempt activities, government consumption, non-profit institutions, and capital formation where input VAT recovery is restricted.
+The VAT tax base is constructed from Supply and Use Table / Input-Output Table values. The model starts from product-level supply and use data, including supply, imports, trade and transport margins, taxes less subsidies on products, intermediate consumption, final household consumption, NPISH consumption, government consumption, gross fixed capital formation, changes in inventories, and exports.
 
-For household final consumption, the tax base is usually estimated using SUT or IOT product-level consumption values, complemented by HBS data. HBS data helps allocate consumption to detailed categories and apply the correct VAT treatment. If HBS data is available only in aggregate format, the model may use COICOP 4-digit categories. If micro-level HBS data is available, the model may estimate VAT liabilities at household level before aggregating the results.
+The data transformation script prepares these components into product-level and industry-level tables. It calculates total supply at basic prices, total supply at purchaser prices, total intermediate consumption, final consumption, gross capital formation, total final uses, and total use at purchaser prices.
 
-For intermediate consumption and investment, the model identifies sectors or activities where input VAT is not fully deductible. This is especially important for exempt sectors such as financial services, health, education, real estate, or public services, depending on national VAT law. In these cases, VAT on inputs may become a final cost and therefore part of the potential VAT base.
+The VAT calculator then uses these transformed data together with VAT policy parameters. The benchmark VAT calculation applies a benchmark VAT rate to the relevant final demand base. The baseline calculation applies current policy treatment, including exempt shares, reduced-rate shares, and standard-rate shares. The simulation calculation applies the user-selected reform parameters.
 
-Imports may also be included in the VAT base, especially where imported goods and services are consumed domestically or used by exempt sectors. Exports are generally zero-rated and are therefore excluded from final VAT liability, although they may remain relevant for input VAT recovery and refund analysis.
+The model separates VAT generated by businesses, households, NPISHs, and government. It also creates product-level VAT outputs, which allow results to be reported by CPA product, sector, and institutional use category.
 
 ## VAT rate structure
 
-VAT systems can be structured with a standard rate, one or more reduced rates, zero-rating, exemptions, and special regimes. The standard VAT rate is the main rate applied to most taxable goods and services. Reduced rates are lower rates applied to selected goods or services, often for social, distributional, or policy reasons. Zero-rating applies a VAT rate of zero while normally allowing input VAT deduction. Exemptions remove output VAT but may restrict input VAT recovery.
+The simplified VAT model uses a benchmark VAT rate, a standard VAT rate, and one preferential VAT rate. The benchmark VAT rate is used to estimate potential VAT revenue under a broad benchmark VAT system. The standard VAT rate is applied to the share of each product that is fully taxable. The preferential VAT rate is applied to the share of each product taxed at the reduced rate.
 
-Some VAT systems may also include special schemes for small taxpayers, agriculture, public bodies, financial services, real estate, margin schemes, or simplified regimes. These provisions can affect the effective VAT base and the amount of VAT that would be collected under current law.
+For each CPA product, the policy table identifies the proportion that is exempt, the proportion taxed at the preferential rate, and the proportion taxed at the standard rate. The fully taxable share is calculated as one minus the exempt share and the reduced-rate share.
 
-The module applies the relevant VAT rate or treatment to each product, use category, or household consumption category. Where the statistical classification does not perfectly match the legal VAT classification, mapping assumptions are required. These assumptions link SUT, IOT, or COICOP categories to the applicable VAT treatment.
+In the Shiny application, users can change the preferential VAT rate, the standard VAT rate, the exempt proportion, the preferential-rate proportion, and the standard-rate proportion for the selected product or industry. The user can also toggle simulation rates and apply the change to the selected year or to all following forecast years.
+
+The model applies these policy parameters mechanically. It recalculates VAT liability using the updated rates and taxable proportions while keeping the underlying SUT / IOT and household expenditure data unchanged.
 
 ## Exemptions, reliefs, and special treatment
 
-VAT systems often include exemptions, reduced rates, zero-rating, thresholds, special schemes, and other preferential treatments. These provisions may apply to specific goods, services, sectors, institutions, taxpayers, or transactions. For example, special treatment may apply to basic food, medicines, education, health services, financial services, residential rent, agriculture, small businesses, exports, or public sector activities.
+VAT exemptions and reduced rates are represented through product-level taxable proportions. For each CPA product, the model identifies the share that is exempt, the share subject to a preferential VAT rate, and the share subject to the standard VAT rate. These shares determine the effective VAT treatment applied to the relevant tax base.
 
-The module uses this information to distinguish between the benchmark VAT liability and the actual VAT liability under current law. This allows users to estimate the fiscal cost of exemptions, reduced rates, zero-rating, and special VAT treatments. It also allows users to simulate reforms that remove, reduce, expand, or modify these provisions.
+The benchmark system assumes broader taxation of the VAT base at the benchmark VAT rate. The difference between benchmark VAT and estimated VAT under current policy is used to measure the policy gap and VAT-related tax expenditures. Exemptions and reduced rates therefore reduce estimated VAT revenue compared with the benchmark.
+
+The model also includes special handling for imputed rents of owner-occupied dwellings and construction-related categories where relevant in the calculation scripts. These treatments are part of the simplified synthetic model and should be interpreted as demonstration assumptions rather than country-specific legal rules.
 
 ## Baseline VAT calculation
 
-The baseline calculation estimates potential VAT revenue under the current policy framework. It uses the observed or extrapolated VAT base from SUTs, IOTs, HBS data, and other statistical sources, together with the current VAT rates and treatment rules. The baseline represents the potential VAT liability under current law before estimating the VAT gap.
+The baseline calculation estimates VAT revenue under the current policy framework. It uses the transformed SUT / IOT data, VAT policy parameters, observed VAT information, benchmark VAT assumptions, and calibration logic.
 
-For standard-rated and reduced-rated goods and services, VAT is calculated by multiplying the taxable base by the applicable VAT rate. For zero-rated goods and services, the output VAT liability is zero, but input VAT recovery may still be considered depending on the structure of the model. For exempt goods and services, output VAT is not charged, but non-deductible input VAT may be estimated where relevant.
+The model first transforms raw SUT / IOT inputs into product-level supply, use, and VAT base tables. It then calculates benchmark VAT revenue, uncalibrated VAT revenue, and calibrated VAT revenue. Benchmark VAT represents revenue under the benchmark VAT system. Uncalibrated VAT represents modelled VAT before calibration. Calibrated VAT represents the VAT result after calibration to the available VAT control.
 
-If SUTs or IOTs are not available for the target year, the model extrapolates the base to more recent years. This may involve updating product-level values using growth rates, price indices, household consumption data, sectoral output data, import data, or other macroeconomic indicators. Extrapolation is necessary because Supply and Use Tables and Input-Output Tables are often published with significant delays and may not be available annually.
+The baseline also estimates VAT gap metrics. The total VAT gap is the difference between benchmark VAT and calibrated VAT. The policy gap reflects the revenue effect of policy provisions such as exemptions and reduced rates. The compliance gap reflects the difference between modelled potential revenue and calibrated or observed VAT revenue.
 
+The baseline result is used as the reference case for the simulation. It provides baseline VAT revenue, VAT by product group, VAT by institutional sector, tax expenditure estimates, and VAT gap indicators.
 
 ```{r gui_vat, echo=FALSE, out.width="100%", fig.align="center"}
 knitr::include_graphics(
@@ -67,21 +85,23 @@ knitr::include_graphics(
 
 ## Reform simulation for VAT policy changes
 
-The module can simulate the revenue impact of changes in VAT policy. Users may test increases or reductions in the standard VAT rate, changes in reduced rates, removal of exemptions, expansion of zero-rating, introduction of new reduced rates, changes in the VAT treatment of specific products, or reforms to special VAT regimes.
+The module simulates the revenue impact of changes in VAT policy parameters. Users may adjust VAT treatment for selected CPA products by changing the exempt proportion, preferential-rate proportion, standard-rate proportion, preferential VAT rate, or standard VAT rate.
 
-The simulation compares the current VAT burden with the proposed VAT burden. Where appropriate, the module may estimate the effect of the policy change on the VAT base using behavioural assumptions. These assumptions may reflect changes in consumption, substitution between products, price effects, or household responses to VAT rate changes.
+The Shiny application stores selected policy changes in a simulation parameter table. When the simulation is run, the selected changes are applied to the simulation VAT policy table. The simulation then recalculates VAT revenue using the updated tax treatment. If the user selects the option to apply changes to following years, the policy change is applied from the simulation year through the remaining forecast horizon.
 
-If micro-level Household Budget Survey data is available, the module may also simulate the distributional effects of VAT reforms across households. This allows users to assess how VAT policy changes affect different income groups, expenditure groups, regions, or household types. If only aggregate HBS data is available, distributional analysis may be more limited, but the data can still support improved allocation of consumption across VAT categories.
+The simulation compares baseline VAT revenue with simulation VAT revenue. The fiscal impact is calculated as simulation VAT revenue minus baseline VAT revenue. For years before the selected simulation year, simulation values are replaced with baseline values so that the reform only affects the selected year and later years.
 
-After the simulated VAT base is estimated, the module calculates the simulated VAT liability using the proposed policy parameters. The revenue impact is calculated as the difference between simulated VAT revenue and baseline VAT revenue.
+The current version of the module applies policy changes mechanically. It does not estimate behavioural responses such as changes in consumption, substitution between products, changes in compliance behaviour, price pass-through, or producer responses. Distributional outputs show the mechanical effect of the VAT structure on household expenditure data.
 
 ## Simulation results
 
-The results show the expected VAT revenue under current law and under the simulation scenario. The current law result represents the baseline potential VAT revenue that would be collected if the current VAT system were fully applied to the estimated VAT base. The simulation result represents the potential VAT revenue expected after applying the proposed policy changes. The fiscal impact is the difference between the two.
+The results show expected VAT revenue under baseline and simulation scenarios. The baseline result represents VAT revenue under the current policy framework. The simulation result represents VAT revenue after applying the selected reform parameters. The fiscal impact is the difference between simulation VAT revenue and baseline VAT revenue.
 
-Results may be presented in nominal terms, such as local currency units, and as a percentage of GDP. They may also be disaggregated by year, product category, COICOP category, industry, use category, VAT rate, VAT treatment, household group, or sector. This allows users to identify which parts of the VAT base generate the largest revenue effects.
+Results are presented in local currency units and as a percentage of GDP. They may also be disaggregated by year, CPA product, product description, institutional sector, household consumption category, and scenario.
 
-The module may also compare potential VAT revenue with actual VAT collections. The difference between potential VAT revenue and actual VAT revenue represents the estimated VAT gap. This gap may reflect non-compliance, fraud, administrative weaknesses, timing differences, policy gaps, measurement issues, or limitations in the statistical data.
+The model reports several aggregate VAT indicators, including benchmark VAT, uncalibrated VAT, calibrated VAT, total VAT gap, policy gap, and compliance gap. These indicators help users distinguish between the benchmark tax base, policy-related revenue losses, and compliance-related gaps.
+
+The model also separates VAT revenue generated by businesses, households, NPISHs, and government. This allows users to identify which sectors and product groups contribute most to VAT revenue and to the fiscal impact of a reform.
 
 ```{r vat_revenue, echo=FALSE, out.width="100%", fig.align="center"}
 knitr::include_graphics(
@@ -94,10 +114,15 @@ knitr::include_graphics(
 
 ## Dashboard and analysis outputs
 
-The dashboard provides a visual summary of the VAT simulation results. It may include summary boxes for potential VAT revenue, actual VAT revenue, VAT gap, simulation revenue, and fiscal impact. It may also include charts showing the evolution of VAT revenue over time, the distribution of potential VAT revenue by product group, and the comparison between current law and simulation results.
+The Shiny dashboard provides a visual summary of the VAT simulation results. It includes sections for policy parameter selection, VAT revenue impact, tax expenditures, and dashboard visualizations.
 
-Additional outputs may show the VAT base by product, COICOP category, industry, use category, VAT rate, or VAT treatment. The dashboard may also include estimates of non-deductible input VAT, VAT by household group, revenue by rate category, and the fiscal cost of exemptions, reduced rates, and zero-rating. These outputs help users understand not only the total revenue effect, but also the distribution of the impact across goods, services, sectors, and households.
+The policy parameter section allows users to select a simulation year, select a product-industry code and name, enter VAT rates and taxable proportions, toggle simulation rates, apply changes to future years, and add the change to the selected simulation table.
 
+The revenue impact section reports VAT revenue projections. The tax expenditure section reports tax expenditure projections. The dashboard visualization section includes five groups of charts: Fiscal Impact, Sectoral Breakdown of VAT Revenues, Tax Expenditures, VAT-GAP Metrics, and Distributional Impacts on Households.
+
+The Fiscal Impact dashboard shows VAT revenue forecasts, VAT revenue as a percentage of GDP, the structure of VAT by institutional sector, and a treemap by sector. The Sectoral Breakdown dashboard shows VAT revenue by CPA sector, including total VAT, VAT generated by households, VAT generated by businesses, and VAT generated by government.
+
+The VAT-GAP Metrics dashboard shows benchmark VAT, uncalibrated VAT, calibrated VAT, policy gap, compliance gap, total VAT gap, and the structure of VAT revenues by institutional sector. The Tax Expenditures dashboard shows VAT tax expenditures over time and by CPA product. The Distributional Impacts dashboard applies effective VAT rates to household expenditure data and reports the distribution of VAT burden across household groups.
 
 ```{r vat_dashboard, echo=FALSE, out.width="100%", fig.align="center"}
 knitr::include_graphics(
@@ -107,10 +132,11 @@ knitr::include_graphics(
 
 ## Tax expenditures
 
-The module can also estimate VAT-related tax expenditures. These represent the revenue forgone because of exemptions, reduced rates, zero-rating, thresholds, or special treatments compared with a benchmark VAT system.
+The module estimates VAT-related tax expenditures by comparing benchmark VAT revenue with estimated VAT revenue under the policy system. Tax expenditures represent the revenue forgone because selected products or sectors are exempt or taxed at preferential rates instead of being taxed under the benchmark VAT system.
 
-Tax expenditure results may be presented by year, product group, COICOP category, industry, VAT treatment, household group, or sector. They may be shown in local currency units and as a percentage of GDP. This allows policymakers to assess the fiscal cost of preferential VAT provisions and evaluate whether these provisions remain justified from a revenue, social, distributional, or economic perspective.
+In the simplified VAT Module, the tax expenditure benchmark sets the VAT base under the benchmark system and compares it with the revenue estimated under current or simulated policy treatment. The difference between benchmark revenue and estimated revenue is reported as a tax expenditure. The model calculates tax expenditures at CPA product level and then aggregates them across the forecast horizon.
 
+Tax expenditure results are presented by year and scenario. They may also be shown by CPA product or product group, in local currency units, and as a percentage of GDP. This allows policymakers to assess the fiscal cost of VAT exemptions, reduced rates, and other preferential treatments.
 
 ```{r vat_taxependitures, echo=FALSE, out.width="100%", fig.align="center"}
 knitr::include_graphics(
@@ -120,6 +146,8 @@ knitr::include_graphics(
 
 ## Interactive VAT Gap Simulation Tool
 
-A live version of the VAT Gap Module can be implemented as an interactive Shiny application. The Shiny interface allows users to select VAT rates, define reform scenarios, adjust VAT treatment rules, apply extrapolation assumptions, and run simulations directly through the web-based model. After the simulation is executed, the application automatically generates potential VAT revenue estimates, VAT gap estimates, tax expenditure estimates, distributional outputs where HBS micro data is available, and dashboard visualizations.
+The VAT Gap Module is implemented as an interactive Shiny application. The Shiny interface allows users to select VAT policy parameters, define reform scenarios, adjust VAT rates and taxable proportions, apply changes from a selected year onward, and run simulations directly through the web-based model.
 
-This live version provides a practical way to test alternative VAT policy scenarios and immediately observe their fiscal, sectoral, and distributional effects.You can access the live version of the Excise Module through the following link:https://wb-data-analytics-app.shinyapps.io/vat-module/
+After the simulation is executed, the application automatically generates VAT revenue projections, VAT gap metrics, tax expenditure estimates, sectoral revenue breakdowns, household distributional outputs, and dashboard visualizations. This live version provides a practical way to test alternative VAT policy scenarios and immediately observe their fiscal, sectoral, and distributional effects.
+
+You can access the live version of the VAT Gap Module through the following link: https://wb-data-analytics-app.shinyapps.io/vat-module/

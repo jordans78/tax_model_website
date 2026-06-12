@@ -1,60 +1,148 @@
+```{r page_setup_customs, include=FALSE}
+options(encoding = "UTF-8")
+try({
+  if (.Platform$OS.type == "windows") {
+    Sys.setlocale("LC_CTYPE", "English_United States.utf8")
+  } else {
+    Sys.setlocale("LC_CTYPE", "en_US.UTF-8")
+  }
+}, silent = TRUE)
+```
+
 # Customs Module
 
-The Customs Duty Module estimates current customs duty liabilities and simulates the revenue impact of changes in customs policy. It is based on anonymized administrative customs data, usually extracted from IT customs declaration systems. The module calculates baseline duty collections under existing MFN and preferential tariff treatments, then compares these results with simulated scenarios using alternative customs rates or specific duties. It helps users assess how tariff changes may affect import quantities, customs values, and overall customs revenue.
+The Customs Duty Module estimates current-law customs duty liabilities and simulates the revenue impact of changes in customs policy. The module is designed for tariff-line import data and compares baseline customs revenue with a simulation scenario using alternative MFN rates, preferential rates, or specific duties.
 
+The current implementation uses synthetic customs data generated directly in R. The data-generation script creates artificial tariff-line records, calibrates the import base to a target customs-revenue-to-GDP ratio, and saves the model inputs to `customs_synthetic_model_inputs.RData`. The Shiny application imports this saved file at startup. The Shiny app does not run the data generator internally.
+
+The module supports MFN and preferential customs treatments. Preferential rates can be calculated automatically as a percentage of MFN rates, or entered manually by the user. The model also applies an import-demand elasticity to estimate how import quantities respond when the simulated tariff burden changes.
 
 ## Required customs data
 
-The module requires anonymized administrative customs data, usually sourced from ASYCUDA or another national customs IT system. The data should include product classification by Harmonized System (HS), customs value, import quantities, tariff rates, country of origin, partner country, preferential treatment, exemptions, reliefs, and duty amounts. Data may be provided at transaction level or aggregated by customs unit, product code, importer group, or reporting period.
+The module requires a customs policy table with product classification, country of origin, customs treatment, customs value, import quantity, and applicable duty rates. In the current synthetic-data workflow, the main input object is `policy_parameters_raw`. For compatibility with the Shiny simulation process, the same policy structure is also stored as `customs_simulation_parameters_raw`.
+
+The required and supported fields are:
+
+- `Year`
+- `chapter`
+- `chapter_name`
+- `tariff_number`
+- `tariff_number_name`
+- `hs_code`
+- `tariff_line_name`
+- `description`
+- `country_origin_iso3`
+- `region`
+- `treatment`
+- `preferential_pct_of_mfn`
+- `supplementary_unit`
+- `customs_value`
+- `import_quantity`
+- `mfn_customs_rate`
+- `mfn_specific_rate`
+- `preferential_customs_rate`
+- `preferential_specific_rate`
+
+In a real country application, these fields can be populated from anonymized customs declaration data, such as data extracted from ASYCUDA or another national customs IT system. In the demonstration version, the fields are generated artificially to reproduce the structure required by the Shiny app and calculator.
+
+### Synthetic customs data generation and import
+
+The synthetic data-generation script creates artificial import records for a base year. It assigns HS chapters, tariff numbers, HS codes, product descriptions, supplementary units, country of origin, region, MFN or preferential treatment, customs values, import quantities, MFN rates, preferential rates, and specific rates.
+
+Preferential rates are generated using country-specific percentages of MFN rates. For example, if the MFN ad valorem rate is 10 percent and `preferential_pct_of_mfn` is 0.70, the preferential ad valorem rate is 7 percent.
+
+The generator saves the following key objects into `customs_synthetic_model_inputs.RData`:
+
+- `policy_parameters_raw`
+- `customs_simulation_parameters_raw`
+- `customs_data`
+- `aggregate_by_country`
+- `aggregate_by_hs_country`
+- `total_impact`
+- `calibration_summary`
+- `customs_macro_assumptions`
+- `eta_m`
+- `benchmark_customs_rate`
+
+The Shiny script imports `customs_synthetic_model_inputs.RData` at startup and standardizes the policy tables before the user runs a simulation. This follows the same workflow used in the other modules: synthetic data are generated first, saved, and then imported by the Shiny app.
 
 ### Country of origin and partner country information
 
-Country of origin and partner country information is used to identify where imported goods are produced and from where they are traded. This information is important for applying preferential tariff rates, trade agreements, and origin-based policy measures. It also allows customs revenue analysis by trading partner and source country.
+Country of origin is used to determine the customs treatment that applies to each import record. The synthetic data include both MFN countries and preferential countries. MFN imports use MFN ad valorem and specific rates. Preferential imports use preferential ad valorem and specific rates.
 
+This structure allows the module to analyze revenue by origin country, region, treatment type, HS code, tariff number, and HS chapter. It also allows users to simulate reforms that affect MFN rates while automatically recalculating preferential rates using the country-specific percentage of MFN.
 
 ### Customs value and import quantity
 
-Customs value and import quantity are key variables for calculating customs duty. The customs value provides the taxable base for ad valorem duties, while import quantity is used for specific duties or for checking consistency in the data. These variables also support analysis of import patterns, effective tariff rates, and revenue by product category.
+Customs value and import quantity are the main bases for customs duty calculations. Customs value is used for ad valorem duties. Import quantity is used for specific duties and for calculating specific-duty ad valorem equivalents.
 
+The synthetic generator calibrates customs values and import quantities so that baseline customs duties equal a selected target share of GDP. This preserves the artificial product mix and country mix while making the aggregate customs revenue more realistic for demonstration.
 
 ### Preferential tariff treatment
 
-Preferential tariff treatment refers to reduced or zero tariff rates applied under trade agreements, regional arrangements, or special policy regimes. The module uses this information to distinguish between standard tariff liabilities and duties actually payable under preferential treatment. This allows users to estimate the fiscal cost of preferences and simulate changes to preferential regimes.
+Preferential tariff treatment refers to reduced customs rates applied under preferential arrangements. The current Shiny interface includes two ways to model preferential rates:
 
+- **Automatic rule:** preferential rates are recalculated as the new MFN rate multiplied by `preferential_pct_of_mfn`.
+- **Manual rule:** the user directly enters preferential customs and specific rates.
 
-
-
-
-### Baseline customs duty calculation
-
-The baseline customs duty calculation estimates the duty payable under the existing customs policy framework. It applies current tariff rates, preferential treatment, exemptions, and reliefs to the customs value or quantity of imports. The baseline provides the reference point against which reform simulations and revenue impacts are measured.
-
-
-### Reform simulation for tariff changes
-
-The module can simulate the impact of changes in tariff rates on customs duty revenue. Users may test increases, reductions, harmonization, or restructuring of tariff rates by product, sector, country, or tariff band. The results show the difference between baseline revenue and simulated revenue under the proposed tariff reform.
+When an MFN row is selected in the app, the MFN change is treated as a product-level schedule change. MFN rows receive the new MFN rates, while preferential rows for the same HS code receive recalculated preferential rates if the automatic rule is selected.
 
 ## Modeling Customs Duty Collections and Reform Impacts
 
 ### Customs duty baseline and simulation process
 
-The Customs Duty Module uses administrative customs declaration data to estimate current customs duty collections and simulate the revenue impact of changes in customs rates. Each import record contains the product code, product description, country of origin, customs value, import quantity, supplementary unit, and the applicable customs treatment. Imports may be subject to ordinary MFN treatment or preferential treatment under a trade agreement. The treatment is determined by the country of origin and remains consistent for that country in the simulation. MFN imports use the MFN customs rate and, where applicable, the MFN specific duty. Preferential imports use the preferential customs rate and, where applicable, the preferential specific duty.
+The Customs Duty Module estimates customs revenue over a forecast horizon. The calculator uses the raw policy table for the current-law baseline and the updated policy table for the simulation. It creates sequential annual projections and applies value and quantity growth factors. If no external growth table is supplied, the calculator creates default artificial growth factors based on the base year and forecast horizon.
+
+The calculator creates the following main output objects for the Shiny app:
+
+- `Customs_summary`
+- `summary_TE_SIM`
+- `merged_Customs_BU_SIM`
+- `merged_Customs_TE_BU_SIM`
+- `Customs_BU_list`
+- `Customs_SIM_list`
+- `Customs_results`
+- `TypeRev_customs_data`
+- `Chapter_customs_data`
+- `Sections_customs_data`
+- `Chapter_customs_data_agg`
+- `MTN_customs_data`
+- `MTN_customs_data_agg`
+- `MTN_customs_data_long`
 
 ### Baseline customs duty calculation
 
-The baseline calculation estimates customs duty under the current tariff regime. It uses the observed customs value and observed import quantity from the customs data. No behavioural adjustment is applied in the baseline because the observed data already reflects the current tariff system. For ad valorem duties, customs duty is calculated by multiplying the customs value by the applicable rate. For specific duties, customs duty is calculated by multiplying the import quantity by the specific duty rate. If both types of duty apply, total customs duty is the sum of the ad valorem duty and the specific duty.
+The baseline calculation estimates customs duty under the current tariff regime. It uses the original customs rates from the raw policy table and does not apply the user-selected simulation changes.
+
+For MFN imports, baseline customs duty is the sum of:
+
+- MFN ad valorem duty, calculated as customs value multiplied by the MFN customs rate
+- MFN specific duty, calculated as import quantity multiplied by the MFN specific rate
+
+For preferential imports, baseline customs duty is the sum of:
+
+- preferential ad valorem duty, calculated as customs value multiplied by the preferential customs rate
+- preferential specific duty, calculated as import quantity multiplied by the preferential specific rate
+
+The baseline result provides the current-law reference case for the simulation and the revenue-impact table.
 
 ### Simulation scenario and revenue impact
 
-The simulation scenario introduces simulation MFN rates, simulation preferential rates, simulation specific duties, or a combination of these. Current rates are kept separately from simulation rates so that the model can compare the baseline situation with the simulated policy scenario. To estimate the effect of the simulation on import quantities, the model compares the current tariff burden with the simulated tariff burden. Specific duties are converted into an ad valorem equivalent by dividing the specific duty rate by the CIF unit price. The change in tariff burden is then used to estimate the change in import quantity using an import demand elasticity. The elasticity is applied only to the difference between the simulated tariff burden and the current tariff burden, not to the existing baseline rate. After the simulated import quantity is estimated, the model calculates the simulated customs value and simulated customs duty using the simulation rates. The revenue impact is calculated as the difference between simulated customs duty and baseline customs duty. Results may be shown at transaction level or aggregated by country of origin, treatment type, HS code, product description, or region.
+The simulation scenario uses the edited rates stored in `customs_simulation_parameters_updated`. The Shiny app creates this updated table when the user adds selected policy changes to the simulation table.
 
+The calculator compares current applicable rates with new applicable rates. Specific duties are converted into ad valorem equivalents by dividing the specific rate by the CIF unit price. The model then calculates the change in the total tariff equivalent and applies the import-demand elasticity.
 
+A key feature of the calculator is that the elasticity is applied only when a new policy-rate shock occurs. If the same simulated rate is carried forward into later years, the same quantity shock is not applied repeatedly. This prevents double-counting of the import response.
 
+After the simulated import quantity is estimated, the model calculates simulated customs value and simulated customs duty. The fiscal impact is the difference between simulated customs duty and baseline customs duty.
 
-## How to create a simulation ?
+## How to create a simulation?
 
-To create a simulation, the user first selects the Simulation Year and then identifies the customs item by choosing the Chapter, Tariff Number, Tariff Line, Country of Origin, and Treatment. After the selection is made, the application automatically displays the corresponding description, region, supplementary unit, import value, import quantity, and current tariff rates. The user can then enter the proposed new MFN customs rate and MFN specific rate. If the selected item has preferential treatment, the user can either keep the automatic rule, where the preferential rate is calculated as a percentage of the MFN rate, or select the manual option and enter the preferential customs rate and preferential specific rate directly. Once the desired changes are entered, the user clicks Add to Table, and the selected policy change is added to the simulation table. The same procedure can be repeated for additional tariff lines, countries, or treatments. After all intended policy changes have been added, the user clicks Run Simulation to apply the changes and generate the revenue impact, tax expenditure results, and dashboard outputs.
+To create a simulation, the user selects the Simulation Year and then identifies the customs item by choosing the Chapter, Tariff Number, Tariff Line, Country of Origin, and Treatment. After the selection is made, the application displays the corresponding description, region, supplementary unit, import value, import quantity, and current tariff rates.
 
+The user can then enter the proposed MFN customs rate and MFN specific rate. If preferential treatment is involved, the user can keep the automatic rule, where preferential rates are calculated as a percentage of MFN, or select the manual rule and enter preferential customs and specific rates directly.
+
+The user clicks **Add to Table** to add the selected policy change to the simulation table. The same procedure can be repeated for additional tariff lines, countries, or treatments. After all intended changes have been added, the user clicks **Run Simulation**. The app then prepares the updated policy dataset, sources the Customs tax calculator, and generates the revenue-impact table, tax-expenditure table, and dashboard outputs.
 
 ```{r gui, echo=FALSE, out.width="100%", fig.align="center"}
 knitr::include_graphics(
@@ -65,31 +153,31 @@ knitr::include_graphics(
 
 ### Revenue Impact / Customs Duties
 
-After the user defines the simulation parameters and clicks **Run Simulation**, the results are displayed in the **Revenue Impact / Customs duties** tab. This section presents the projected customs revenue under the current law and under the simulation scenario.
+After the user defines simulation parameters and clicks **Run Simulation**, results are displayed in the **Revenue Impact / Customs duties** tab. This table reports projected customs revenue under current law and under the simulation scenario for each year of the forecast period.
 
-The table reports results for each year of the forecast period. The **Current law** column shows the baseline customs duties that would be collected without any policy change. The **Simulation** column shows the customs duties after applying the selected policy changes. The **Fiscal impact** column measures the difference between the simulation scenario and the current law scenario.
+The **Current law** column shows baseline customs duties without the policy change. The **Simulation** column shows customs duties after applying the selected policy changes. The **Fiscal impact** column shows the difference between simulation and current law.
 
-The results are presented both in **LCU Mil** and as a **percentage of GDP**. This allows the user to evaluate the fiscal impact not only in nominal revenue terms, but also relative to the size of the economy. A negative fiscal impact means that the simulation reduces customs revenue compared with current law, while a positive fiscal impact means that the simulation increases customs revenue.
-
+The results are presented in **LCU Mil** and as a **percentage of GDP**. This allows the user to evaluate the fiscal effect both in revenue terms and relative to the size of the economy. A positive fiscal impact means the simulation increases customs revenue relative to current law. A negative fiscal impact means the simulation reduces customs revenue.
 
 ```{r rev_imp, echo=FALSE, out.width="100%", fig.align="center"}
 knitr::include_graphics(
    "https://raw.githubusercontent.com/jordans78/tax_model_website/main/img/CustomsModule/Revenue_Impact.png"
-  
 )
 ```
 
 
 ### Dashboard / Revenues
 
-The **Dashboard / Revenues** tab provides a visual summary of the customs revenue simulation results. It is designed to help users quickly compare the baseline and simulation scenarios and identify where the main revenue changes occur.
+The **Dashboard / Revenues** tab provides a visual summary of the customs simulation results. It compares baseline and simulation customs revenue over time and shows where the main revenue effects occur across product groups.
 
-At the top of the dashboard, summary boxes display total baseline customs revenues and total simulation customs revenues for the selected simulation year. The line chart shows the evolution of customs revenues over the forecast period under both current law and simulation assumptions.
+The dashboard includes:
 
-The treemap presents the distribution of customs revenues across HS chapters for the selected simulation year. Larger boxes represent chapters that contribute more to total customs revenue. The bar chart compares baseline and simulation customs revenues by HS chapter, making it possible to identify which product groups are most affected by the policy change.
+- total customs revenues by year
+- distribution of simulation customs revenues across HS chapters
+- baseline versus simulation customs revenues by HS chapter
+- total customs-related tax expenditures over the forecast period
 
-The dashboard also includes a chart showing total customs-related tax expenditures over the forecast period. Together, these visual outputs help the user understand both the aggregate revenue effect and the distribution of the impact across customs categories.
-
+The chart script uses the calculator outputs `merged_Customs_BU_SIM`, `Chapter_customs_data_agg`, `summary_TE_SIM`, the forecast horizon, and the selected `SimulationYear`. Values are shown in **LCU Mil**, consistent with the Shiny tables.
 
 ```{r dashboard, echo=FALSE, out.width="100%", fig.align="center"}
 knitr::include_graphics(
@@ -97,13 +185,14 @@ knitr::include_graphics(
 )
 ```
 
-### Tax Expenditures 
 
-The **Tax Expenditures / Customs Duties** tab reports the estimated customs tax expenditures generated under the current policy framework. These tax expenditures represent the revenue forgone due to preferential customs treatment or other policy provisions that reduce the applicable customs duty compared with the benchmark rate.
+### Tax Expenditures
 
-The table presents tax expenditures by year in **LCU Mil** and as a **percentage of GDP**. The value in LCU Mil shows the nominal amount of customs revenue forgone, while the percentage of GDP indicates the macro-fiscal size of the tax expenditure.
+The **Tax Expenditures / Customs Duties** tab reports estimated customs tax expenditures. In the current calculator, customs tax expenditures are calculated only for MFN or non-preferential imports. Preferential rates are ignored in the tax expenditure calculation.
 
-This output helps users assess the fiscal cost of customs preferences and exemptions. It also allows policymakers to compare tax expenditures over time and evaluate whether preferential treatment has a significant effect on public revenues.
+The benchmark customs duty is calculated using the benchmark ad valorem customs rate and customs value. The actual duty for tax expenditure purposes is the MFN ad valorem customs duty. Specific duties are not included in the benchmark calculation. The tax expenditure is the positive difference between the benchmark duty and the actual MFN ad valorem duty.
+
+The benchmark rate can be supplied by the Shiny app through the benchmark customs rate slider. If no benchmark is supplied, the calculator can use the highest MFN ad valorem customs rate in the raw policy table.
 
 ```{r tax_exp, echo=FALSE, out.width="100%", fig.align="center"}
 knitr::include_graphics(
@@ -113,6 +202,8 @@ knitr::include_graphics(
 
 ## Interactive Customs Duty Simulation Tool
 
-A live version of the Customs Duty Module is implemented as an interactive Shiny application. The Shiny interface allows users to select customs items, define reform scenarios, adjust MFN and preferential tariff rates, and run simulations directly through the web-based model. After the simulation is executed, the application automatically generates revenue impact tables, tax expenditure estimates, and dashboard visualizations. This live version provides a practical way to test alternative customs policy scenarios and immediately observe their fiscal effects.You can access the live version of the Customs Duty Module through the following link:https://wb-data-analytics-app.shinyapps.io/customs-module/
+A live version of the Customs Duty Module is implemented as an interactive Shiny application. The Shiny interface allows users to select customs items, define reform scenarios, adjust MFN and preferential tariff rates, choose the preferential-rate rule, set the import-demand elasticity, and run simulations directly through the web-based model.
 
+After the simulation is executed, the application generates revenue impact tables, customs tax expenditure outputs, and dashboard visualizations. This live version provides a practical way to test alternative customs policy scenarios and immediately observe their fiscal effects.
 
+You can access the live version of the Customs Duty Module through the following link: https://wb-data-analytics-app.shinyapps.io/customs-module/
